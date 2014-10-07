@@ -3,7 +3,6 @@ package com.cube.storm;
 import android.content.Context;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
@@ -21,8 +20,8 @@ public class ContentSettings
 	 */
 	private static ContentSettings instance;
 
-	@Getter @Setter private boolean useExternalCache = true;
-	@Getter @Setter private String cachePath;
+	@Getter private boolean useExternalCache;
+	@Getter private String cachePath;
 
 	/**
 	 * Gets the instance of the {@link com.cube.storm.ContentSettings} class
@@ -67,6 +66,8 @@ public class ContentSettings
 		{
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
+
+			construct.useExternalCache = true;
 		}
 
 		/**
@@ -75,7 +76,7 @@ public class ContentSettings
 		 */
 		public ContentSettings setUseExternalCache(boolean useExternal)
 		{
-			construct.setUseExternalCache(useExternal);
+			construct.useExternalCache = useExternal;
 			return construct;
 		}
 
@@ -84,7 +85,7 @@ public class ContentSettings
 		 */
 		public ContentSettings setPreferredCachePath(String path)
 		{
-			construct.setCachePath(path);
+			construct.cachePath = path;
 			return construct;
 		}
 
