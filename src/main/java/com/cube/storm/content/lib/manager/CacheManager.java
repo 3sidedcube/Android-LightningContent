@@ -3,6 +3,7 @@ package com.cube.storm.content.lib.manager;
 import android.content.Context;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.cube.storm.ContentSettings;
 import com.google.gson.JsonElement;
@@ -63,12 +64,24 @@ public class CacheManager
 
 	public long getFileAge(String fileName)
 	{
-		return System.currentTimeMillis() - new File(cachePath, fileName).lastModified();
+		if (!TextUtils.isEmpty(fileName))
+		{
+			return System.currentTimeMillis() - new File(cachePath, fileName).lastModified();
+		}
+
+		return 0;
 	}
 
+	/**
+	 * Check if file exists in cache
+	 * @param fileName Name of file
+	 * @return {@code true} if file exists
+	 */
 	public boolean fileExists(String fileName)
 	{
-		return new File(cachePath, fileName).exists();
+		return !TextUtils.isEmpty(fileName)
+			&& !TextUtils.isEmpty(cachePath)
+			&& new File(cachePath, fileName).exists();
 	}
 
 	public byte[] readFile(String fileName)
@@ -110,41 +123,44 @@ public class CacheManager
 
 	public byte[] readFile(InputStream input)
 	{
-		ByteArrayOutputStream bos = null;
-
-		try
+		if (isExternalStorageReadable())
 		{
-			bos = new ByteArrayOutputStream(8192);
+			ByteArrayOutputStream bos = null;
 
-			int bufferSize = 1024;
-			byte[] buffer = new byte[bufferSize];
-
-			int len = 0;
-			while ((len = input.read(buffer)) > 0)
-			{
-				bos.write(buffer, 0, len);
-			}
-
-			return bos.toByteArray();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
 			try
 			{
-				input.close();
+				bos = new ByteArrayOutputStream(8192);
 
-				if (bos != null)
+				int bufferSize = 1024;
+				byte[] buffer = new byte[bufferSize];
+
+				int len = 0;
+				while ((len = input.read(buffer)) > 0)
 				{
-					bos.close();
+					bos.write(buffer, 0, len);
 				}
+
+				return bos.toByteArray();
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
+			}
+			finally
+			{
+				try
+				{
+					input.close();
+
+					if (bos != null)
+					{
+						bos.close();
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -169,37 +185,38 @@ public class CacheManager
 	 */
 	public void writeFile(String fileName, byte[] contents)
 	{
-		FileOutputStream fos = null;
-		try
+		if (isExternalStorageWritable())
 		{
-			File f = new File(cachePath + "/" + fileName);
-			fos = new FileOutputStream(f);
-			fos.write(contents);
-			fos.flush();
-			fos.close();
+			FileOutputStream fos = null;
+			try
+			{
+				File f = new File(cachePath + "/" + fileName);
+				fos = new FileOutputStream(f);
+				fos.write(contents);
+				fos.flush();
+				fos.close();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
-		catch (Exception e)
+		else
 		{
-			e.printStackTrace();
+			Log.d(CacheManager.class.getSimpleName(), "Cache is not writable. Is it mounted?");
 		}
 	}
 
 	public boolean removeFile(String fileName)
 	{
-		return removeFile(cachePath, fileName);
-	}
-
-	public boolean removeFile(String folderPath, String fileName)
-	{
-		File f = new File(folderPath + "/" + fileName);
+		File f = new File(cachePath + "/" + fileName);
 		return f.delete();
 	}
 
 	/**
 	 * Serializes data into bytes
 	 *
-	 * @param data
-	 *            The data to be serailized
+	 * @param data The data to be serialized
 	 * @return The serialized data in a byte array
 	 */
 	public static byte[] serializeObject(Object data)
@@ -220,7 +237,7 @@ public class CacheManager
 	}
 
 	/**
-	 * Gets the files
+	 * Gets the file's hash
 	 * @param filename
 	 * @return
 	 */
