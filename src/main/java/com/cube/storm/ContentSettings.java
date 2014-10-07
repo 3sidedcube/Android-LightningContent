@@ -2,6 +2,9 @@ package com.cube.storm;
 
 import android.content.Context;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
  * a new {@link com.cube.storm.ContentSettings.Builder} object in your {@link android.app.Application} singleton class.
@@ -17,6 +20,9 @@ public class ContentSettings
 	 * The singleton instance of the settings
 	 */
 	private static ContentSettings instance;
+
+	@Getter @Setter private boolean useExternalCache = true;
+	@Getter @Setter private String cachePath;
 
 	/**
 	 * Gets the instance of the {@link com.cube.storm.ContentSettings} class
@@ -53,8 +59,6 @@ public class ContentSettings
 		private ContentSettings construct;
 
 		private Context context;
-		private boolean useExternalCache = true;
-		private String cachePath;
 
 		/**
 		 * Default constructor
@@ -66,6 +70,25 @@ public class ContentSettings
 		}
 
 		/**
+		 * If not using external cache, set this to false and set the path to use on the file system
+		 * @param useExternal {@code false} if using different cache location
+		 */
+		public ContentSettings setUseExternalCache(boolean useExternal)
+		{
+			construct.setUseExternalCache(useExternal);
+			return construct;
+		}
+
+		/**
+		 * Set the path to use as the cache dir instead of external cache of the device
+		 */
+		public ContentSettings setPreferredCachePath(String path)
+		{
+			construct.setCachePath(path);
+			return construct;
+		}
+
+		/**
 		 * Builds the final settings object and sets its instance. Use {@link #getInstance()} to retrieve the settings
 		 * instance.
 		 *
@@ -74,25 +97,6 @@ public class ContentSettings
 		public ContentSettings build()
 		{
 			return (ContentSettings.instance = construct);
-		}
-
-		/**
-		 * If not using external cache, set this to false and set the path to use on the file system
-		 * @param useExternalCache {@code false} if using different cache location
-		 */
-		public ContentSettings setUseExternalCache(boolean useExternalCache)
-		{
-			this.useExternalCache = useExternalCache;
-			return instance;
-		}
-
-		/**
-		 * Set the path to use as the cache dir instead of external cache of the device
-		 */
-		public ContentSettings setPreferredCachePath(String cachePath)
-		{
-			this.cachePath = cachePath;
-			return instance;
 		}
 	}
 }
