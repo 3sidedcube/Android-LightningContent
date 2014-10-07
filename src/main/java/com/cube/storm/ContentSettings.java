@@ -53,6 +53,8 @@ public class ContentSettings
 		private ContentSettings construct;
 
 		private Context context;
+		private boolean useExternalCache = true;
+		private String cachePath;
 
 		/**
 		 * Default constructor
@@ -72,6 +74,25 @@ public class ContentSettings
 		public ContentSettings build()
 		{
 			return (ContentSettings.instance = construct);
+		}
+
+		/**
+		 * If not using external cache, set this to false and set the path to use on the file system
+		 * @param useExternalCache {@code false} if using different cache location
+		 */
+		public ContentSettings setUseExternalCache(boolean useExternalCache)
+		{
+			this.useExternalCache = useExternalCache;
+			return instance;
+		}
+
+		/**
+		 * Set the path to use as the cache dir instead of external cache of the device
+		 */
+		public ContentSettings setPreferredCachePath(String cachePath)
+		{
+			this.cachePath = cachePath;
+			return instance;
 		}
 	}
 }
