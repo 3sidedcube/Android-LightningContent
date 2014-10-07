@@ -1,7 +1,10 @@
 package com.cube.storm.content.lib.manager;
 
+import android.content.Context;
 import android.os.Environment;
+import android.text.TextUtils;
 
+import com.cube.storm.ContentSettings;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
@@ -26,7 +29,7 @@ public class CacheManager
 	@Setter @Getter private static String cachePath;
 	private static CacheManager instance;
 
-	public static CacheManager getInstance()
+	public static CacheManager getInstance(Context context)
 	{
 		if (instance == null)
 		{
@@ -34,12 +37,28 @@ public class CacheManager
 			{
 				if (instance == null)
 				{
-					instance = new CacheManager();
+					instance = new CacheManager(context);
 				}
 			}
 		}
 
 		return instance;
+	}
+
+	public CacheManager(Context context)
+	{
+		if (ContentSettings.getInstance().isUseExternalCache())
+		{
+			cachePath = context.getExternalCacheDir().getAbsolutePath();
+		}
+		else if (!TextUtils.isEmpty(ContentSettings.getInstance().getCachePath()))
+		{
+			cachePath = ContentSettings.getInstance().getCachePath();
+		}
+		else
+		{
+			throw new NullPointerException("No cache path given");
+		}
 	}
 
 	public long getFileAge(String fileName)
@@ -52,29 +71,14 @@ public class CacheManager
 		return new File(cachePath, fileName).exists();
 	}
 
-	public boolean fileExists(String path, String fileName)
-	{
-		return new File(path, fileName).exists();
-	}
-
 	public byte[] readFile(String fileName)
 	{
-		return readFile(cachePath, fileName);
-	}
-
-	public byte[] readFile(String folderPath, String fileName)
-	{
-		return readFile(new File(folderPath, fileName));
+		return readFile(new File(cachePath, fileName));
 	}
 
 	public String readFileAsString(String fileName)
 	{
 		return readFileAsString(new File(cachePath, fileName));
-	}
-
-	public String readFileAsString(String path, String fileName)
-	{
-		return readFileAsString(new File(path, fileName));
 	}
 
 	public String readFileAsString(File fileName)
@@ -85,11 +89,6 @@ public class CacheManager
 	public JsonElement readFileAsJson(String fileName)
 	{
 		return readFileAsJson(new File(cachePath, fileName));
-	}
-
-	public JsonElement readFileAsJson(String path, String fileName)
-	{
-		return readFileAsJson(new File(path, fileName));
 	}
 
 	public JsonElement readFileAsJson(File fileName)
@@ -152,29 +151,28 @@ public class CacheManager
 		return null;
 	}
 
-	public void writeFile(String fileName, byte[] contents)
-	{
-		writeFile(cachePath, fileName, contents);
-	}
-
+	/**
+	 * Write file to cache
+	 * @param fileName Name of file
+	 * @param contents Contents of file
+	 */
 	public void writeFile(String fileName, Serializable contents)
 	{
 		byte[] c = serializeObject(contents);
-		writeFile(cachePath, fileName, c);
+		writeFile(fileName, c);
 	}
 
-	public void writeFile(String folderPath, String fileName, Serializable contents)
-	{
-		byte[] c = serializeObject(contents);
-		writeFile(folderPath, fileName, c);
-	}
-
-	public void writeFile(String folderPath, String fileName, byte[] contents)
+	/**
+	 * Write file to cache
+	 * @param fileName Name of file
+	 * @param contents Contents of file
+	 */
+	public void writeFile(String fileName, byte[] contents)
 	{
 		FileOutputStream fos = null;
 		try
 		{
-			File f = new File(folderPath + "/" + fileName);
+			File f = new File(cachePath + "/" + fileName);
 			fos = new FileOutputStream(f);
 			fos.write(contents);
 			fos.flush();
@@ -293,8 +291,11 @@ public class CacheManager
 		}
 	}
 
-	/* Checks if external storage is available for read and write */
-	public boolean isExternalStorageWritable()
+	/**
+	 * Check the availability of the external storage for writing
+	 * @return {@code true} if storage media is available
+	 */
+	private boolean isExternalStorageWritable()
 	{
 		String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state))
@@ -304,8 +305,11 @@ public class CacheManager
 		return false;
 	}
 
-	/* Checks if external storage is available to at least read */
-	public boolean isExternalStorageReadable()
+	/**
+	 * Check the availability of the external storage for reading
+	 * @return {@code true} if storage media is available
+	 */
+	private boolean isExternalStorageReadable()
 	{
 		String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state) ||
