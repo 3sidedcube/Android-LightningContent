@@ -1,5 +1,7 @@
 package com.cube.storm.content.lib.manager;
 
+import android.os.Environment;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
@@ -21,7 +23,7 @@ import lombok.Setter;
 
 public class CacheManager
 {
-	@Setter @Getter private static String cachePath = "";
+	@Setter @Getter private static String cachePath;
 	private static CacheManager instance;
 
 	public static CacheManager getInstance()
@@ -289,5 +291,28 @@ public class CacheManager
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	/* Checks if external storage is available for read and write */
+	public boolean isExternalStorageWritable()
+	{
+		String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/* Checks if external storage is available to at least read */
+	public boolean isExternalStorageReadable()
+	{
+		String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state) ||
+			Environment.MEDIA_MOUNTED_READ_ONLY.equals(state))
+		{
+			return true;
+		}
+		return false;
 	}
 }
