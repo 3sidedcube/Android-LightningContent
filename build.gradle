@@ -15,7 +15,9 @@ android {
 
 dependencies {
 	compile 'com.android.support:support-annotations:20.0.0'
-	compile 'com.nostra13.universalimageloader:universal-image-loader:1.8.+'
 	compile 'org.projectlombok:lombok:1.14.8'
 	compile 'com.google.code.gson:gson:2.3'
+
+	//This will change to a maven dependency
+	compile project(':Libraries:StormUtil')
 }
