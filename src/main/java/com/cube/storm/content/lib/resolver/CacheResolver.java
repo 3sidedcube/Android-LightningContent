@@ -93,6 +93,10 @@ public class CacheResolver extends Resolver
 				e.printStackTrace();
 			}
 		}
+		else if ("cache".equalsIgnoreCase(uri.getScheme()))
+		{
+			return resolveFile(resolveUri(uri));
+		}
 
 		return null;
 	}
