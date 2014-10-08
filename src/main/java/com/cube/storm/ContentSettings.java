@@ -2,6 +2,11 @@ package com.cube.storm;
 
 import android.content.Context;
 
+import com.cube.storm.content.lib.resolver.CacheResolver;
+import com.cube.storm.util.lib.resolver.Resolver;
+
+import lombok.Getter;
+
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
  * a new {@link com.cube.storm.ContentSettings.Builder} object in your {@link android.app.Application} singleton class.
@@ -35,6 +40,11 @@ public class ContentSettings
 	}
 
 	/**
+	 * The default resolver for the bundled content
+	 */
+	@Getter private Resolver defaultResolver;
+
+	/**
 	 * Default private constructor
 	 */
 	private ContentSettings(){}
@@ -61,6 +71,21 @@ public class ContentSettings
 		{
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
+
+			defaultResolver(new CacheResolver(context));
+		}
+
+		/**
+		 * Sets the default resolver for the bundled content
+		 *
+		 * @param defaultResolver The new default resolver
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder defaultResolver(Resolver defaultResolver)
+		{
+			construct.defaultResolver = defaultResolver;
+			return this;
 		}
 
 		/**
