@@ -2,6 +2,9 @@ package com.cube.storm;
 
 import android.content.Context;
 
+import com.cube.storm.content.lib.resolver.CacheResolver;
+import com.cube.storm.util.lib.resolver.Resolver;
+
 import lombok.Getter;
 
 /**
@@ -40,6 +43,11 @@ public class ContentSettings
 	}
 
 	/**
+	 * The default resolver for the bundled content
+	 */
+	@Getter private Resolver defaultResolver;
+
+	/**
 	 * Default private constructor
 	 */
 	private ContentSettings(){}
@@ -74,19 +82,33 @@ public class ContentSettings
 		 * If not using external cache, set this to false and set the path to use on the file system
 		 * @param useExternal {@code false} if using different cache location
 		 */
-		public ContentSettings setUseExternalCache(boolean useExternal)
+		public Builder setUseExternalCache(boolean useExternal)
 		{
 			construct.useExternalCache = useExternal;
-			return construct;
+			return this;
 		}
 
 		/**
 		 * Set the path to use as the cache dir instead of external cache of the device
 		 */
-		public ContentSettings setPreferredCachePath(String path)
+		public Builder setPreferredCachePath(String path)
 		{
 			construct.cachePath = path;
-			return construct;
+			defaultResolver(new CacheResolver(context));
+			return this;
+		}
+
+		/**
+		 * Sets the default resolver for the bundled content
+		 *
+		 * @param defaultResolver The new default resolver
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder defaultResolver(Resolver defaultResolver)
+		{
+			construct.defaultResolver = defaultResolver;
+			return this;
 		}
 
 		/**

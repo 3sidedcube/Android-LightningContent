@@ -86,12 +86,16 @@ public class CacheResolver extends Resolver
 					path += uri.getPath();
 				}
 
-				return CacheManager.getInstance().readFile(context.getAssets().open(path));
+				return CacheManager.getInstance(context).readFile(context.getAssets().open(path));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
+		}
+		else if ("cache".equalsIgnoreCase(uri.getScheme()))
+		{
+			return resolveFile(resolveUri(uri));
 		}
 
 		return null;
