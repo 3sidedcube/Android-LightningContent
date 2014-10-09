@@ -5,6 +5,9 @@ import com.cube.storm.content.lib.D;
 import net.callumtaylor.asynchttp.AsyncHttpClient.ClientExecutorTask;
 import net.callumtaylor.asynchttp.response.AsyncHttpResponseHandler;
 
+import org.xeustechnologies.jtar.TarEntry;
+import org.xeustechnologies.jtar.TarInputStream;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
