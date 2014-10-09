@@ -84,31 +84,61 @@ public class CacheManager
 			&& new File(cachePath, fileName).exists();
 	}
 
+	/**
+	 * Read file from cache and return as byte array
+	 * @param fileName Name of file
+	 * @return Byte array of file contents
+	 */
 	public byte[] readFile(String fileName)
 	{
 		return readFile(new File(cachePath, fileName));
 	}
 
+	/**
+	 * Read file from cache and return as String representation of contents
+	 * @param fileName Name of file
+	 * @return String of file contents
+	 */
 	public String readFileAsString(String fileName)
 	{
 		return readFileAsString(new File(cachePath, fileName));
 	}
 
+	/**
+	 * Read file from cache and return contents as a String
+	 * @param fileName File to read
+	 * @return String of file contents
+	 */
 	public String readFileAsString(File fileName)
 	{
 		return new String(readFile(fileName));
 	}
 
+	/**
+	 * Read file and return contents as JSON
+	 * @param fileName Name of file
+	 * @return JSON element of file contents
+	 */
 	public JsonElement readFileAsJson(String fileName)
 	{
 		return readFileAsJson(new File(cachePath, fileName));
 	}
 
+	/**
+	 * Read file and return contents as JSON
+	 * @param fileName File to read
+	 * @return JSON element of file contents
+	 */
 	public JsonElement readFileAsJson(File fileName)
 	{
 		return new JsonParser().parse(readFileAsString(fileName));
 	}
 
+	/**
+	 * Read file and return contents as byte array
+	 * @param fileName File to read
+	 * @return Byte array of file contents
+	 */
 	public byte[] readFile(File fileName)
 	{
 		try
@@ -121,6 +151,11 @@ public class CacheManager
 		}
 	}
 
+	/**
+	 * Read file from cache and return it as a byte array
+	 * @param input InputStream to read from
+	 * @return Byte array of the contents of file
+	 */
 	public byte[] readFile(InputStream input)
 	{
 		if (isExternalStorageReadable())
