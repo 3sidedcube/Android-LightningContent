@@ -68,7 +68,7 @@ public class CacheResolver extends Resolver
 		if ("file".equalsIgnoreCase(uri.getScheme()))
 		{
 			File f = new File(CacheManager.getCachePath() + "/" + uri.getHost() + "/" + uri.getPath());
-			return CacheManager.getInstance().readFile(f);
+			return CacheManager.getInstance(context).readFile(f);
 		}
 		else if ("assets".equalsIgnoreCase(uri.getScheme()))
 		{
