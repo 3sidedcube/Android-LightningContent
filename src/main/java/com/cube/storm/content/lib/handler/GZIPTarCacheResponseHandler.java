@@ -11,6 +11,7 @@ import org.xeustechnologies.jtar.TarInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.util.zip.GZIPInputStream;
@@ -29,64 +30,46 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 		mFilePath = filePath;
 	}
 
-	@Override public void onBeginPublishedDownloadProgress(InputStream stream, ClientExecutorTask client, long totalLength) throws SocketTimeoutException, Exception
+	@Override public void onBeginPublishedDownloadProgress(InputStream stream, ClientExecutorTask client, long totalLength) throws SocketTimeoutException, IOException
 	{
-		try
+		TarInputStream tis = new TarInputStream(new GZIPInputStream(stream, Math.max(8196, totalLength > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)totalLength)));
+		TarEntry file;
+		long totalRead = 0;
+
+		while ((file = tis.getNextEntry()) != null)
 		{
-			TarInputStream tis = new TarInputStream(new GZIPInputStream(stream, Math.max(8196, totalLength > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)totalLength)));
-			TarEntry file;
-			long totalRead = 0;
+			if (file.getName().equals("./")) continue;
 
-			while ((file = tis.getNextEntry()) != null)
+			if (file.isDirectory())
 			{
-				if (file.getName().equals("./")) continue;
-
-				if (file.isDirectory())
-				{
-					File f = new File(mFilePath + "/" + file.getName());
-					D.out("created %s, %s", f.getAbsoluteFile(), f.mkdirs());
-					continue;
-				}
-
-				D.out("writing %s", file.getName());
-				FileOutputStream fos = new FileOutputStream(mFilePath + "/" + file.getName());
-				BufferedOutputStream dest = new BufferedOutputStream(fos);
-
-				int count = 0;
-				byte data[] = new byte[8192];
-
-				while ((count = tis.read(data)) != -1)
-				{
-					dest.write(data, 0, count);
-					totalRead += count;
-					output(totalRead, totalLength);
-				}
-
-				dest.flush();
-				dest.close();
+				File f = new File(mFilePath + "/" + file.getName());
+				D.out("created %s, %s", f.getAbsoluteFile(), f.mkdirs());
+				continue;
 			}
 
-			if (!client.isCancelled())
+			D.out("writing %s", file.getName());
+			FileOutputStream fos = new FileOutputStream(mFilePath + "/" + file.getName());
+			BufferedOutputStream dest = new BufferedOutputStream(fos);
+
+			int count = 0;
+			byte data[] = new byte[8192];
+
+			while ((count = tis.read(data)) != -1)
 			{
-				getConnectionInfo().responseLength = totalRead;
+				dest.write(data, 0, count);
+				totalRead += count;
 			}
 
-			tis.close();
+			dest.flush();
+			dest.close();
 		}
-		catch (Exception e)
+
+		if (!client.isCancelled())
 		{
-			e.printStackTrace();
+			getConnectionInfo().responseLength = totalRead;
 		}
-	}
 
-	public void output(long totalRead, long totalLength)
-	{
-
-	}
-
-	@Override public void generateContent()
-	{
-
+		tis.close();
 	}
 
 	@Override public void onFailure()
