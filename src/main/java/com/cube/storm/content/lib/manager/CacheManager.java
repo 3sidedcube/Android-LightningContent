@@ -111,7 +111,12 @@ public class CacheManager
 	 */
 	public String readFileAsString(File fileName)
 	{
-		return new String(readFile(fileName));
+		if (fileExists(fileName.getName()))
+		{
+			return new String(readFile(fileName));
+		}
+
+		return null;
 	}
 
 	/**
@@ -131,7 +136,12 @@ public class CacheManager
 	 */
 	public JsonElement readFileAsJson(File fileName)
 	{
-		return new JsonParser().parse(readFileAsString(fileName));
+		if (fileExists(fileName.getName()))
+		{
+			return new JsonParser().parse(readFileAsString(fileName));
+		}
+
+		return null;
 	}
 
 	/**
@@ -143,7 +153,11 @@ public class CacheManager
 	{
 		try
 		{
-			return readFile(new FileInputStream(fileName));
+			if (fileExists(fileName.getName()))
+			{
+				return readFile(new FileInputStream(fileName));
+			}
+			return null;
 		}
 		catch (Exception e)
 		{
@@ -244,8 +258,13 @@ public class CacheManager
 
 	public boolean removeFile(String fileName)
 	{
-		File f = new File(cachePath + "/" + fileName);
-		return f.delete();
+		if (isExternalStorageWritable())
+		{
+			File f = new File(cachePath + "/" + fileName);
+			return f.delete();
+		}
+
+		return false;
 	}
 
 	/**
