@@ -20,6 +20,8 @@ import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UpdateManager
 {
@@ -130,99 +132,37 @@ public class UpdateManager
 						File manifest = new File(f, Constants.FILE_MANIFEST);
 
 						JsonObject manu = ReadHelper.readJsonFromFileStream(new FileInputStream(manifest)).getAsJsonObject();
-						String[] downloadedPages = new File(f.getAbsolutePath() + "/" + Constants.FOLDER_PAGES + "/").list();
-						String[] downloadedLanguages = new File(f.getAbsolutePath() + "/" + Constants.FOLDER_LANGUAGES + "/").list();
-						String[] downloadedContent = new File(f.getAbsolutePath() + "/" + Constants.FOLDER_CONTENT + "/").list();
-						String[] downloadedData = new File(f.getAbsolutePath() + "/" + Constants.FOLDER_DATA + "/").list();
 
-						if (manu.has("pages"))
+						// Create map of expected data
+						Map<String, String[]> expectedContent = new HashMap<String, String[]>();
+						expectedContent.put("pages", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_PAGES + "/").list());
+						expectedContent.put("languages", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_LANGUAGES + "/").list());
+						expectedContent.put("content", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_CONTENT + "/").list());
+						expectedContent.put("data", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_DATA + "/").list());
+
+						for (String key : expectedContent.keySet())
 						{
-							JsonArray pagesList = manu.get("pages").getAsJsonArray();
-
-							for (JsonElement e : pagesList)
+							if (manu.has(key))
 							{
-								String filename = e.getAsJsonObject().get("src").getAsString();
+								JsonArray pagesList = manu.get(key).getAsJsonArray();
 
-								int size = downloadedPages == null ? 0 : downloadedPages.length;
-								for (int index = 0; index < size; index++)
+								for (JsonElement e : pagesList)
 								{
-									if (downloadedPages[index] != null && downloadedPages[index].equals(filename))
+									String filename = e.getAsJsonObject().get("src").getAsString();
+
+									int size = expectedContent.get(key) == null ? 0 : expectedContent.get(key).length;
+									for (int index = 0; index < size; index++)
 									{
-										downloadedPages[index] = null;
-										break;
+										if (expectedContent.get(key)[index] != null && expectedContent.get(key)[index].equals(filename))
+										{
+											expectedContent.get(key)[index] = null;
+											break;
+										}
 									}
 								}
+
+								removeFiles(f.getAbsolutePath() + "/" + key + "/", expectedContent.get(key));
 							}
-
-							removeFiles(f.getAbsolutePath() + "/" + Constants.FOLDER_PAGES + "/", downloadedPages);
-						}
-
-						if (manu.has("languages"))
-						{
-							JsonArray languageList = manu.get("languages").getAsJsonArray();
-
-							for (JsonElement e : languageList)
-							{
-								String filename = e.getAsJsonObject().get("src").getAsString();
-
-								int size = downloadedLanguages == null ? 0 : downloadedLanguages.length;
-								for (int index = 0; index < size; index++)
-								{
-									if (downloadedLanguages[index] != null && downloadedLanguages[index].equals(filename))
-									{
-										downloadedLanguages[index] = null;
-										break;
-									}
-								}
-							}
-
-							removeFiles(f.getAbsolutePath() + "/" + Constants.FOLDER_LANGUAGES + "/", downloadedLanguages);
-						}
-
-						if (manu.has("content"))
-						{
-							JsonArray contentList = manu.get("content").getAsJsonArray();
-
-							for (JsonElement e : contentList)
-							{
-								D.out(e);
-								String filename = e.getAsJsonObject().get("src").getAsString();
-
-								int size = downloadedContent == null ? 0 : downloadedContent.length;
-								for (int index = 0; index < size; index++)
-								{
-									if (downloadedContent[index] != null && downloadedContent[index].equals(filename))
-									{
-										downloadedContent[index] = null;
-										break;
-									}
-								}
-							}
-
-							removeFiles(f.getAbsolutePath() + "/" + Constants.FOLDER_CONTENT + "/", downloadedContent);
-						}
-
-						if (manu.has("data"))
-						{
-							JsonArray contentList = manu.get("data").getAsJsonArray();
-
-							for (JsonElement e : contentList)
-							{
-								D.out(e);
-								String filename = e.getAsJsonObject().get("src").getAsString();
-
-								int size = downloadedContent == null ? 0 : downloadedContent.length;
-								for (int index = 0; index < size; index++)
-								{
-									if (downloadedContent[index] != null && downloadedContent[index].equals(filename))
-									{
-										downloadedContent[index] = null;
-										break;
-									}
-								}
-							}
-
-							removeFiles(f.getAbsolutePath() + "/" + Constants.FOLDER_DATA + "/", downloadedContent);
 						}
 
 						// check files integrity
