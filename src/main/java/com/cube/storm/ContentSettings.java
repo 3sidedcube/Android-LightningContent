@@ -2,6 +2,8 @@ package com.cube.storm;
 
 import android.content.Context;
 
+import lombok.Getter;
+
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
  * a new {@link com.cube.storm.ContentSettings.Builder} object in your {@link android.app.Application} singleton class.
@@ -17,6 +19,9 @@ public class ContentSettings
 	 * The singleton instance of the settings
 	 */
 	private static ContentSettings instance;
+
+	@Getter private boolean useExternalCache;
+	@Getter private String cachePath;
 
 	/**
 	 * Gets the instance of the {@link com.cube.storm.ContentSettings} class
@@ -61,6 +66,27 @@ public class ContentSettings
 		{
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
+
+			construct.useExternalCache = true;
+		}
+
+		/**
+		 * If not using external cache, set this to false and set the path to use on the file system
+		 * @param useExternal {@code false} if using different cache location
+		 */
+		public ContentSettings setUseExternalCache(boolean useExternal)
+		{
+			construct.useExternalCache = useExternal;
+			return construct;
+		}
+
+		/**
+		 * Set the path to use as the cache dir instead of external cache of the device
+		 */
+		public ContentSettings setPreferredCachePath(String path)
+		{
+			construct.cachePath = path;
+			return construct;
 		}
 
 		/**
