@@ -75,7 +75,8 @@ public class ContentSettings
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
 
-			construct.useExternalCache = true;
+			setUseExternalCache(true);
+			defaultResolver(new CacheResolver(context));
 		}
 
 		/**
@@ -94,7 +95,6 @@ public class ContentSettings
 		public Builder setPreferredCachePath(String path)
 		{
 			construct.cachePath = path;
-			defaultResolver(new CacheResolver(context));
 			return this;
 		}
 
