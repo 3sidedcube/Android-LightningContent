@@ -23,8 +23,10 @@ public class ContentSettings
 	 */
 	private static ContentSettings instance;
 
-	@Getter private boolean useExternalCache;
-	@Getter private String cachePath;
+	/**
+	 * The path to the storage folder on disk
+	 */
+	@Getter private String storagePath;
 
 	/**
 	 * Gets the instance of the {@link com.cube.storm.ContentSettings} class
@@ -36,7 +38,7 @@ public class ContentSettings
 	{
 		if (instance == null)
 		{
-			throw new IllegalAccessError("You must build the Ui settings object first using UiSettings$Builder");
+			throw new IllegalAccessError("You must build the Content settings object first using ContentSettings$Builder");
 		}
 
 		return instance;
@@ -65,6 +67,9 @@ public class ContentSettings
 		 */
 		private ContentSettings construct;
 
+		/**
+		 * The application context
+		 */
 		private Context context;
 
 		/**
@@ -75,26 +80,16 @@ public class ContentSettings
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
 
-			setUseExternalCache(true);
 			defaultResolver(new CacheResolver(context));
+			storagePath(this.context.getFilesDir().getAbsolutePath());
 		}
 
 		/**
-		 * If not using external cache, set this to false and set the path to use on the file system
-		 * @param useExternal {@code false} if using different cache location
+		 * Set the path to use as the storage dir
 		 */
-		public Builder setUseExternalCache(boolean useExternal)
+		public Builder storagePath(String path)
 		{
-			construct.useExternalCache = useExternal;
-			return this;
-		}
-
-		/**
-		 * Set the path to use as the cache dir instead of external cache of the device
-		 */
-		public Builder setPreferredCachePath(String path)
-		{
-			construct.cachePath = path;
+			construct.storagePath = path;
 			return this;
 		}
 
