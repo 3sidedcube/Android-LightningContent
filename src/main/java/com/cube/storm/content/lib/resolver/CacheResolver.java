@@ -2,6 +2,7 @@ package com.cube.storm.content.lib.resolver;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.cube.storm.content.lib.manager.CacheManager;
@@ -25,7 +26,7 @@ public class CacheResolver extends Resolver
 		this.context = context;
 	}
 
-	@Override public Uri resolveUri(Uri uri)
+	@Override public Uri resolveUri(@NonNull Uri uri)
 	{
 		if ("cache".equalsIgnoreCase(uri.getScheme()))
 		{
@@ -63,7 +64,7 @@ public class CacheResolver extends Resolver
 		return null;
 	}
 
-	@Override public byte[] resolveFile(Uri uri)
+	@Override public byte[] resolveFile(@NonNull Uri uri)
 	{
 		if ("file".equalsIgnoreCase(uri.getScheme()))
 		{
