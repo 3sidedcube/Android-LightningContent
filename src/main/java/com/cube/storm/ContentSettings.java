@@ -3,6 +3,7 @@ package com.cube.storm;
 import android.content.Context;
 
 import com.cube.storm.content.lib.resolver.CacheResolver;
+import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.Resolver;
 
 import lombok.Getter;
@@ -23,9 +24,6 @@ public class ContentSettings
 	 */
 	private static ContentSettings instance;
 
-	@Getter private boolean useExternalCache;
-	@Getter private String cachePath;
-
 	/**
 	 * Gets the instance of the {@link com.cube.storm.ContentSettings} class
 	 * Throws a {@link IllegalAccessError} if the singleton has not been instantiated properly
@@ -36,7 +34,7 @@ public class ContentSettings
 	{
 		if (instance == null)
 		{
-			throw new IllegalAccessError("You must build the Ui settings object first using UiSettings$Builder");
+			throw new IllegalAccessError("You must build the Content settings object first using ContentSettings$Builder");
 		}
 
 		return instance;
@@ -46,6 +44,16 @@ public class ContentSettings
 	 * The default resolver for the bundled content
 	 */
 	@Getter private Resolver defaultResolver;
+
+	/**
+	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
+	 */
+	@Getter private FileManager fileManager;
+
+	/**
+	 * The path to the storage folder on disk
+	 */
+	@Getter private String storagePath;
 
 	/**
 	 * Default private constructor
@@ -65,6 +73,9 @@ public class ContentSettings
 		 */
 		private ContentSettings construct;
 
+		/**
+		 * The application context
+		 */
 		private Context context;
 
 		/**
@@ -75,26 +86,26 @@ public class ContentSettings
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
 
-			setUseExternalCache(true);
 			defaultResolver(new CacheResolver(context));
+			storagePath(this.context.getFilesDir().getAbsolutePath());
+			fileManager(FileManager.getInstance());
 		}
 
 		/**
-		 * If not using external cache, set this to false and set the path to use on the file system
-		 * @param useExternal {@code false} if using different cache location
+		 * Set the path to use as the storage dir
 		 */
-		public Builder setUseExternalCache(boolean useExternal)
+		public Builder storagePath(String path)
 		{
-			construct.useExternalCache = useExternal;
+			construct.storagePath = path;
 			return this;
 		}
 
 		/**
-		 * Set the path to use as the cache dir instead of external cache of the device
+		 * Set the path to use as the storage dir
 		 */
-		public Builder setPreferredCachePath(String path)
+		public Builder fileManager(FileManager manager)
 		{
-			construct.cachePath = path;
+			construct.fileManager = manager;
 			return this;
 		}
 

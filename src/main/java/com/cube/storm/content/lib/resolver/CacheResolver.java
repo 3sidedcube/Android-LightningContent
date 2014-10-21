@@ -2,9 +2,10 @@ package com.cube.storm.content.lib.resolver;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.cube.storm.content.lib.manager.CacheManager;
+import com.cube.storm.ContentSettings;
 import com.cube.storm.util.lib.resolver.Resolver;
 
 import java.io.File;
@@ -25,11 +26,11 @@ public class CacheResolver extends Resolver
 		this.context = context;
 	}
 
-	@Override public Uri resolveUri(Uri uri)
+	@Override public Uri resolveUri(@NonNull Uri uri)
 	{
 		if ("cache".equalsIgnoreCase(uri.getScheme()))
 		{
-			File f = new File(CacheManager.getCachePath() + "/" + uri.getHost() + "/" + uri.getPath());
+			File f = new File(ContentSettings.getInstance().getStoragePath() + "/" + uri.getHost() + "/" + uri.getPath());
 
 			if (f.exists())
 			{
@@ -63,12 +64,12 @@ public class CacheResolver extends Resolver
 		return null;
 	}
 
-	@Override public byte[] resolveFile(Uri uri)
+	@Override public byte[] resolveFile(@NonNull Uri uri)
 	{
 		if ("file".equalsIgnoreCase(uri.getScheme()))
 		{
-			File f = new File(CacheManager.getCachePath() + "/" + uri.getHost() + "/" + uri.getPath());
-			return CacheManager.getInstance(context).readFile(f);
+			File f = new File(ContentSettings.getInstance().getStoragePath() + "/" + uri.getHost() + "/" + uri.getPath());
+			return ContentSettings.getInstance().getFileManager().readFile(f);
 		}
 		else if ("assets".equalsIgnoreCase(uri.getScheme()))
 		{
@@ -86,7 +87,7 @@ public class CacheResolver extends Resolver
 					path += uri.getPath();
 				}
 
-				return CacheManager.getInstance(context).readFile(context.getAssets().open(path));
+				return ContentSettings.getInstance().getFileManager().readFile(context.getAssets().open(path));
 			}
 			catch (Exception e)
 			{
@@ -95,7 +96,7 @@ public class CacheResolver extends Resolver
 		}
 		else if ("cache".equalsIgnoreCase(uri.getScheme()))
 		{
-			return resolveFile(resolveUri(uri));
+			return resolveFile(uri);
 		}
 
 		return null;
