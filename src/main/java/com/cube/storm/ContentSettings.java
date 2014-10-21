@@ -3,6 +3,7 @@ package com.cube.storm;
 import android.content.Context;
 
 import com.cube.storm.content.lib.resolver.CacheResolver;
+import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.Resolver;
 
 import lombok.Getter;
@@ -24,11 +25,6 @@ public class ContentSettings
 	private static ContentSettings instance;
 
 	/**
-	 * The path to the storage folder on disk
-	 */
-	@Getter private String storagePath;
-
-	/**
 	 * Gets the instance of the {@link com.cube.storm.ContentSettings} class
 	 * Throws a {@link IllegalAccessError} if the singleton has not been instantiated properly
 	 *
@@ -48,6 +44,16 @@ public class ContentSettings
 	 * The default resolver for the bundled content
 	 */
 	@Getter private Resolver defaultResolver;
+
+	/**
+	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
+	 */
+	@Getter private FileManager fileManager;
+
+	/**
+	 * The path to the storage folder on disk
+	 */
+	@Getter private String storagePath;
 
 	/**
 	 * Default private constructor
@@ -82,6 +88,7 @@ public class ContentSettings
 
 			defaultResolver(new CacheResolver(context));
 			storagePath(this.context.getFilesDir().getAbsolutePath());
+			fileManager(FileManager.getInstance());
 		}
 
 		/**
@@ -90,6 +97,15 @@ public class ContentSettings
 		public Builder storagePath(String path)
 		{
 			construct.storagePath = path;
+			return this;
+		}
+
+		/**
+		 * Set the path to use as the storage dir
+		 */
+		public Builder fileManager(FileManager manager)
+		{
+			construct.fileManager = manager;
 			return this;
 		}
 

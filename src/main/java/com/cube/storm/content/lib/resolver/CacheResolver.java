@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.cube.storm.ContentSettings;
-import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.Resolver;
 
 import java.io.File;
@@ -70,7 +69,7 @@ public class CacheResolver extends Resolver
 		if ("file".equalsIgnoreCase(uri.getScheme()))
 		{
 			File f = new File(ContentSettings.getInstance().getStoragePath() + "/" + uri.getHost() + "/" + uri.getPath());
-			return FileManager.getInstance().readFile(f);
+			return ContentSettings.getInstance().getFileManager().readFile(f);
 		}
 		else if ("assets".equalsIgnoreCase(uri.getScheme()))
 		{
@@ -88,7 +87,7 @@ public class CacheResolver extends Resolver
 					path += uri.getPath();
 				}
 
-				return FileManager.getInstance().readFile(context.getAssets().open(path));
+				return ContentSettings.getInstance().getFileManager().readFile(context.getAssets().open(path));
 			}
 			catch (Exception e)
 			{
