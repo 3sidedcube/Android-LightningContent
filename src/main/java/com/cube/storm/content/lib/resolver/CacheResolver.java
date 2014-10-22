@@ -13,6 +13,8 @@ import java.io.File;
 /**
  * Resolves a `cache://file/path` Uri into its actual path, either a `assets://file/path` or
  * `file://file/path`.
+ * <p/>
+ * Access this class via {@link com.cube.storm.ContentSettings#getBundleBuilder()}. Do not instantiate this class directly
  *
  * @author Callum Taylor
  * @project StormContent
@@ -66,37 +68,23 @@ public class CacheResolver extends Resolver
 
 	@Override public byte[] resolveFile(@NonNull Uri uri)
 	{
-		if ("file".equalsIgnoreCase(uri.getScheme()))
+		if ("cache".equalsIgnoreCase(uri.getScheme()))
 		{
-			File f = new File(ContentSettings.getInstance().getStoragePath() + "/" + uri.getHost() + "/" + uri.getPath());
-			return ContentSettings.getInstance().getFileManager().readFile(f);
-		}
-		else if ("assets".equalsIgnoreCase(uri.getScheme()))
-		{
-			try
+			Uri newUri = resolveUri(uri);
+
+			if (newUri != null && !"cache".equalsIgnoreCase(newUri.getScheme()))
 			{
-				String path = "";
-
-				if (!TextUtils.isEmpty(uri.getHost()))
-				{
-					path += uri.getHost();
-				}
-
-				if (!TextUtils.isEmpty(uri.getPath()))
-				{
-					path += uri.getPath();
-				}
-
-				return ContentSettings.getInstance().getFileManager().readFile(context.getAssets().open(path));
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
+				return resolveFile(newUri);
 			}
 		}
-		else if ("cache".equalsIgnoreCase(uri.getScheme()))
+		else
 		{
-			return resolveFile(uri);
+			Resolver resolver = ContentSettings.getInstance().getUriResolvers().get(uri.getScheme());
+
+			if (resolver != null)
+			{
+				return resolver.resolveFile(uri);
+			}
 		}
 
 		return null;
