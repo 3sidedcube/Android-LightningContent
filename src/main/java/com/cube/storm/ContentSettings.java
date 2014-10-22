@@ -309,6 +309,19 @@ public class ContentSettings
 		}
 
 		/**
+		 * Registers a uri resolvers
+		 *
+		 * @param resolvers The map of resolvers to register
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder registerUriResolver(Map<String, Resolver> resolvers)
+		{
+			construct.uriResolvers.putAll(resolvers);
+			return this;
+		}
+
+		/**
 		 * Sets the default {@link com.cube.storm.content.lib.factory.FileFactory} for the module
 		 *
 		 * @param fileFactory The new {@link com.cube.storm.content.lib.factory.FileFactory}
