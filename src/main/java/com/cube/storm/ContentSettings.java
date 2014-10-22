@@ -60,7 +60,7 @@ public class ContentSettings
 	@Getter private String storagePath;
 
 	/**
-	 * Storm app ID in the format {@code SYSTEM_SOCIETYID_APPID}
+	 * Storm app ID in the format {@code SYSTEM-SOCIETYID-APPID}
 	 */
 	@Getter private String appId;
 
@@ -142,7 +142,7 @@ public class ContentSettings
 		/**
 		 * Set the app id to use when dealing with Storm CMS
 		 *
-		 * @param id The ID of the app in the format {@code SYSTEM_SOCIETYID_APPID}
+		 * @param id The ID of the app in the format {@code SYSTEM-SOCIETYID-APPID}
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
