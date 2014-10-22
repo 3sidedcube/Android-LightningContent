@@ -56,6 +56,63 @@ public class UpdateManager
 	private UpdateManager(){}
 
 	/**
+	 * Downloads the latest full bundle from the server
+	 */
+	public void checkForBundle()
+	{
+		APIManager.getInstance().checkForBundle(new JsonResponseHandler()
+		{
+			@Override public void onFailure()
+			{
+				try
+				{
+					Debug.out(getConnectionInfo());
+					Debug.out(getContent());
+				}
+				catch (Exception e)
+				{
+					Debug.out(e);
+				}
+			}
+
+			@Override public void onSuccess()
+			{
+				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
+				{
+					try
+					{
+						if (getConnectionInfo().responseCode == 200)
+						{
+							JsonElement response = getContent();
+
+							if (response != null && response.isJsonObject())
+							{
+								if (response.getAsJsonObject().has("file"))
+								{
+									String endpoint = response.getAsJsonObject().get("file").getAsString();
+									downloadUpdates(endpoint);
+								}
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+				}
+				else if (getConnectionInfo().responseCode == 303)
+				{
+					if (getConnectionInfo().responseHeaders.containsKey("Location"))
+					{
+						String location = getConnectionInfo().responseHeaders.get("Location");
+						downloadUpdates(location);
+					}
+				}
+			}
+		});
+	}
+
+	/**
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
