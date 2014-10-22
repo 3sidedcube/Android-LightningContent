@@ -23,47 +23,19 @@ import java.util.Map;
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
  * <p/>
- * This class should not be directly instantiated.
+ * Access this class via {@link com.cube.storm.ContentSettings#getUpdateManager()}. Do not instantiate this class directly
  *
  * @author Callum Taylor
  * @project StormContent
  */
 public class UpdateManager
 {
-	private static UpdateManager instance;
-
-	/**
-	 * Gets the update manager singleton or creates one if its null
-	 *
-	 * @return The update manager singleton
-	 */
-	public static UpdateManager getInstance()
-	{
-		if (instance == null)
-		{
-			synchronized (UpdateManager.class)
-			{
-				if (instance == null)
-				{
-					instance = new UpdateManager();
-				}
-			}
-		}
-
-		return instance;
-	}
-
-	/**
-	 * Default private constructor
-	 */
-	private UpdateManager(){}
-
 	/**
 	 * Downloads the latest full bundle from the server
 	 */
 	public void checkForBundle()
 	{
-		APIManager.getInstance().checkForBundle(new JsonResponseHandler()
+		ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
 		{
 			@Override public void onFailure()
 			{
@@ -122,7 +94,7 @@ public class UpdateManager
 	 */
 	public void checkForUpdates(long lastUpdate)
 	{
-		APIManager.getInstance().checkForDelta(lastUpdate, new JsonResponseHandler()
+		ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
 			@Override public void onFailure()
 			{

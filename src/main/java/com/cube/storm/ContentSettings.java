@@ -157,6 +157,9 @@ public class ContentSettings
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
 
+			APIManager(new APIManager());
+			UpdateManager(new UpdateManager());
+
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
 
