@@ -39,7 +39,6 @@ dependencies {
 	compile 'com.google.code.gson:gson:2.3'
 	compile 'net.callumtaylor:asynchttpclient:1.5'
 	compile 'com.squareup:otto:1.3.5'
-	compile 'com.android.support:support-v13:20.0.0'
 	compile 'org.xeustechnologies:jtar:1.1'
 
 	compile 'com.3sidedcube.storm:util:0.1a'
