@@ -39,6 +39,9 @@ public class APIManager
 		return instance;
 	}
 
+	/**
+	 * Default private constructor
+	 */
 	private APIManager(){}
 
 	/**

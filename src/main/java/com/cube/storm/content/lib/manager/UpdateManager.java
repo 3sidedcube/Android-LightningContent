@@ -53,6 +53,9 @@ public class UpdateManager
 		return instance;
 	}
 
+	/**
+	 * Default private constructor
+	 */
 	private UpdateManager(){}
 
 	/**
@@ -178,6 +181,8 @@ public class UpdateManager
 	 */
 	public void downloadUpdates(String endpoint)
 	{
+		Debug.out("Downloading from %s", endpoint);
+
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
 			AsyncHttpClient client = new AsyncHttpClient(endpoint);
@@ -312,11 +317,9 @@ public class UpdateManager
 				String requiredHash = page.get("hash").getAsString();
 				String actualHash = ContentSettings.getInstance().getFileManager().getFileHash(contentPath.getAbsolutePath() + "/" + folders[index] + "/" + filename);
 
-				Debug.out("%s - %s = %s? %s", filename, requiredHash, actualHash, requiredHash.equals(actualHash));
-
-				if (!actualHash.equals(requiredHash))
+				if (actualHash != null && !requiredHash.equals(actualHash))
 				{
-					// TODO: remove file
+					Debug.out("File %s has the wrong hash! Expected %s but got %s", filename, requiredHash, actualHash);
 				}
 			}
 		}
