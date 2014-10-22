@@ -57,11 +57,6 @@ public class ContentSettings
 	private ContentSettings(){}
 
 	/**
-	 * The default resolver for the bundled content
-	 */
-	@Getter private Resolver defaultResolver;
-
-	/**
 	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
 	 */
 	@Getter private FileManager fileManager;
@@ -153,11 +148,9 @@ public class ContentSettings
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
 
-			CacheResolver cacheResolver = new CacheResolver(context);
 			registerUriResolver("file", new FileResolver());
 			registerUriResolver("assets", new AssetsResolver(this.context));
-			registerUriResolver("cache", cacheResolver);
-			defaultResolver(cacheResolver);
+			registerUriResolver("cache", new CacheResolver(this.context));
 
 			storagePath(this.context.getFilesDir().getAbsolutePath());
 			fileManager(FileManager.getInstance());
@@ -298,19 +291,6 @@ public class ContentSettings
 		public Builder fileManager(@NonNull FileManager manager)
 		{
 			construct.fileManager = manager;
-			return this;
-		}
-
-		/**
-		 * Sets the default resolver for the bundled content
-		 *
-		 * @param defaultResolver The new default resolver
-		 *
-		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
-		 */
-		public Builder defaultResolver(@NonNull Resolver defaultResolver)
-		{
-			construct.defaultResolver = defaultResolver;
 			return this;
 		}
 
