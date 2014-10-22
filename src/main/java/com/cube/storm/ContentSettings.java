@@ -3,6 +3,7 @@ package com.cube.storm;
 import android.content.Context;
 
 import com.cube.storm.content.lib.Environment;
+import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.Resolver;
@@ -83,6 +84,11 @@ public class ContentSettings
 	@Getter private Environment contentEnvironment;
 
 	/**
+	 * Listener instance for updates downloaded
+	 */
+	@Getter private UpdateListener updateListener;
+
+	/**
 	 * Default private constructor
 	 */
 	private ContentSettings(){}
@@ -119,9 +125,24 @@ public class ContentSettings
 		}
 
 		/**
+		 * Sets the new listener for updates
+		 *
+		 * @param listener The new listener
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder updateListener(UpdateListener listener)
+		{
+			construct.updateListener = listener;
+			return this;
+		}
+
+		/**
 		 * Set the app id to use when dealing with Storm CMS
 		 *
 		 * @param id The ID of the app in the format {@code SYSTEM_SOCIETYID_APPID}
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder appId(String id)
 		{
@@ -148,6 +169,8 @@ public class ContentSettings
 		 * Set the content URL to download bundles from
 		 *
 		 * @param baseUrl The base URL to download content from. Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder contentBaseUrl(String baseUrl)
 		{
@@ -159,6 +182,8 @@ public class ContentSettings
 		 * Set the content URL to download bundles from
 		 *
 		 * @param version The version of the endpoint to download content from. Example version {@code v1.0}. Version must not end in a slash
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder contentVersion(String version)
 		{
@@ -170,6 +195,8 @@ public class ContentSettings
 		 * Set the content URL to download bundles from
 		 *
 		 * @param environment The environment of the endpoint.
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder contentEnvironment(Environment environment)
 		{
@@ -183,6 +210,8 @@ public class ContentSettings
 		 * @param baseUrl The base URL to download content from. Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
 		 * @param version The version of the endpoint to download content from. Example version {@code v1.0}. Version must not end in a slash
 		 * @param environment The environment of the endpoint.
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder contentUrl(String baseUrl, String version, Environment environment)
 		{

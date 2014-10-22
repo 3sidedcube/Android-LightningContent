@@ -197,6 +197,11 @@ public class UpdateManager
 					if (!failed && refresh)
 					{
 						BusHelper.getInstance().post(new RefreshContentEvent());
+
+						if (ContentSettings.getInstance().getUpdateListener() != null)
+						{
+							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
+						}
 					}
 				}
 			});
