@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.cube.storm.content.lib.Environment;
+import com.cube.storm.content.lib.manager.APIManager;
+import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
 import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.UpdateListener;
@@ -60,6 +62,16 @@ public class ContentSettings
 	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
 	 */
 	@Getter private FileManager fileManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.manager.APIManager} to use throughout the module
+	 */
+	@Getter private APIManager apiManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.manager.UpdateManager} to use throughout the module
+	 */
+	@Getter private UpdateManager updateManager;
 
 	/**
 	 * The path to the storage folder on disk
@@ -291,6 +303,32 @@ public class ContentSettings
 		public Builder fileManager(@NonNull FileManager manager)
 		{
 			construct.fileManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default API manager
+		 *
+		 * @param manager The new API manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder APIManager(@NonNull APIManager manager)
+		{
+			construct.apiManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default Update manager
+		 *
+		 * @param manager The new Update manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder UpdateManager(@NonNull UpdateManager manager)
+		{
+			construct.updateManager = manager;
 			return this;
 		}
 
