@@ -72,7 +72,7 @@ public class CacheResolver extends Resolver
 		{
 			Uri newUri = resolveUri(uri);
 
-			if (newUri != null && !"cache".equalsIgnoreCase(uri.getScheme()))
+			if (newUri != null && !"cache".equalsIgnoreCase(newUri.getScheme()))
 			{
 				return resolveFile(newUri);
 			}
