@@ -8,7 +8,7 @@ import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
- *
+ * <p/>
  * This class should not be directly instantiated.
  *
  * @author Callum Taylor
@@ -43,7 +43,7 @@ public class APIManager
 
 	/**
 	 * Checks the API for any delta updates.
-	 *
+	 * <p/>
 	 * Uses the URLs defined in {@link com.cube.storm.ContentSettings#contentBaseUrl} and {@link com.cube.storm.ContentSettings#contentVersion} to check for
 	 * updates since {@param lastUpdate}
 	 *
@@ -73,7 +73,7 @@ public class APIManager
 
 	/**
 	 * Downloads a full bundle from the server
-	 *
+	 * <p/>
 	 * Uses the URLs defined in {@link com.cube.storm.ContentSettings#contentBaseUrl} and {@link com.cube.storm.ContentSettings#contentVersion} to download a full
 	 * bundle
 	 *
@@ -86,7 +86,7 @@ public class APIManager
 
 	/**
 	 * Downloads a full bundle from the server
-	 *
+	 * <p/>
 	 * Uses the URLs defined in {@link com.cube.storm.ContentSettings#contentBaseUrl} and {@link com.cube.storm.ContentSettings#contentVersion} to download a full
 	 * bundle since {@param lastUpdate}
 	 *

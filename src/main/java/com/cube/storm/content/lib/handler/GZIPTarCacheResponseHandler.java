@@ -1,6 +1,6 @@
 package com.cube.storm.content.lib.handler;
 
-import com.cube.storm.content.lib.D;
+import com.cube.storm.util.lib.debug.Debug;
 
 import net.callumtaylor.asynchttp.AsyncHttpClient.ClientExecutorTask;
 import net.callumtaylor.asynchttp.response.AsyncHttpResponseHandler;
@@ -43,11 +43,12 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 			if (file.isDirectory())
 			{
 				File f = new File(mFilePath + "/" + file.getName());
-				D.out("created %s, %s", f.getAbsoluteFile(), f.mkdirs());
+				Debug.out("created %s, %s", f.getAbsoluteFile(), f.mkdirs());
+
 				continue;
 			}
 
-			D.out("writing %s", file.getName());
+			Debug.out("writing %s", file.getName());
 			FileOutputStream fos = new FileOutputStream(mFilePath + "/" + file.getName());
 			BufferedOutputStream dest = new BufferedOutputStream(fos);
 
@@ -72,11 +73,6 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 		tis.close();
 	}
 
-	@Override public void onFailure()
-	{
-		D.out(getConnectionInfo());
-	}
-
 	/**
 	 * Processes the response from the stream.
 	 * This is <b>not</b> ran on the UI thread
@@ -86,5 +82,9 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 	@Override public String getContent()
 	{
 		return mFilePath;
+	}
+
+	@Override public void generateContent()
+	{
 	}
 }

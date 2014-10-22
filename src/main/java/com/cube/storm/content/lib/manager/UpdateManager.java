@@ -1,20 +1,20 @@
 package com.cube.storm.content.lib.manager;
 
-import android.content.Context;
 import android.text.TextUtils;
 
+import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
-import com.cube.storm.content.lib.Constants.ContentDensity;
-import com.cube.storm.content.lib.D;
 import com.cube.storm.content.lib.event.RefreshContentEvent;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
 import com.cube.storm.content.lib.helper.BusHelper;
 import com.cube.storm.content.lib.helper.ReadHelper;
+import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
 import java.io.File;
@@ -23,12 +23,24 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This is the manager class responsible for checking for and downloading updates from the server
+ * <p/>
+ * This class should not be directly instantiated.
+ *
+ * @author Callum Taylor
+ * @project StormContent
+ */
 public class UpdateManager
 {
 	private static UpdateManager instance;
-	private final Context context;
 
-	public static UpdateManager getInstance(Context context)
+	/**
+	 * Gets the update manager singleton or creates one if its null
+	 *
+	 * @return The update manager singleton
+	 */
+	public static UpdateManager getInstance()
 	{
 		if (instance == null)
 		{
@@ -36,7 +48,7 @@ public class UpdateManager
 			{
 				if (instance == null)
 				{
-					instance = new UpdateManager(context);
+					instance = new UpdateManager();
 				}
 			}
 		}
@@ -44,30 +56,27 @@ public class UpdateManager
 		return instance;
 	}
 
-	public UpdateManager(Context c)
-	{
-		context = c;
-	}
+	private UpdateManager(){}
 
 	/**
-	 * Checks for updates on the server and downloads any new files
+	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
+	 *
+	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */
-	public void checkForUpdates(int appId, long lastUpdate)
+	public void checkForUpdates(long lastUpdate)
 	{
-		ContentDensity cd = ContentDensity.getDensityForSize(context);
-
-		APIManager.getInstance().checkForUpdate(appId, lastUpdate, cd.getDensity(), new JsonResponseHandler()
+		APIManager.getInstance().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
 			@Override public void onFailure()
 			{
 				try
 				{
-					D.out(getConnectionInfo());
-					D.out(getContent());
+					Debug.out(getConnectionInfo());
+					Debug.out(getContent());
 				}
 				catch (Exception e)
 				{
-					D.out(e);
+					Debug.out(e);
 				}
 			}
 
@@ -108,43 +117,54 @@ public class UpdateManager
 		});
 	}
 
+	/**
+	 * Downloads a tar.gz file from the given endpoint
+	 *
+	 * @param endpoint The endpoint to the tar.gz bundle/delta file
+	 */
 	public void downloadUpdates(String endpoint)
 	{
-		D.out("Downloading updates from %s", endpoint);
-		if (!TextUtils.isEmpty(CacheManager.getCachePath()))
+		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
-			APIManager.getInstance().downloadUpdate(endpoint, new GZIPTarCacheResponseHandler(CacheManager.getCachePath())
+			AsyncHttpClient client = new AsyncHttpClient(endpoint);
+			client.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath())
 			{
-				boolean refresh = false;
+				private boolean refresh = false;
 
 				@Override public void onFailure()
 				{
-					D.out(getConnectionInfo());
-					D.out(getContent());
+					try
+					{
+						Debug.out(getConnectionInfo());
+						Debug.out(getContent());
+					}
+					catch (Exception e)
+					{
+						Debug.out(e);
+					}
 				}
 
 				@Override public void onSuccess()
 				{
 					try
 					{
-						D.out("Extracting files");
-						File f = new File(getContent());
-						File manifest = new File(f, Constants.FILE_MANIFEST);
+						File contentPath = new File(getContent());
+						File manifest = new File(contentPath, Constants.FILE_MANIFEST);
 
-						JsonObject manu = ReadHelper.readJsonFromFileStream(new FileInputStream(manifest)).getAsJsonObject();
+						JsonObject manifestJson = ReadHelper.readJsonFromFileStream(new FileInputStream(manifest)).getAsJsonObject();
 
 						// Create map of expected data
 						Map<String, String[]> expectedContent = new HashMap<String, String[]>();
-						expectedContent.put("pages", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_PAGES + "/").list());
-						expectedContent.put("languages", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_LANGUAGES + "/").list());
-						expectedContent.put("content", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_CONTENT + "/").list());
-						expectedContent.put("data", new File(f.getAbsolutePath() + "/" + Constants.FOLDER_DATA + "/").list());
+						expectedContent.put("pages", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_PAGES + "/").list());
+						expectedContent.put("languages", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_LANGUAGES + "/").list());
+						expectedContent.put("content", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_CONTENT + "/").list());
+						expectedContent.put("data", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_DATA + "/").list());
 
 						for (String key : expectedContent.keySet())
 						{
-							if (manu.has(key))
+							if (manifestJson.has(key))
 							{
-								JsonArray pagesList = manu.get(key).getAsJsonArray();
+								JsonArray pagesList = manifestJson.get(key).getAsJsonArray();
 
 								for (JsonElement e : pagesList)
 								{
@@ -161,38 +181,26 @@ public class UpdateManager
 									}
 								}
 
-								removeFiles(f.getAbsolutePath() + "/" + key + "/", expectedContent.get(key));
+								removeFiles(contentPath.getAbsolutePath() + "/" + key + "/", expectedContent.get(key));
 							}
 						}
 
-						// check files integrity
-						integrityCheck();
+						integrityCheck(contentPath);
 					}
 					catch (FileNotFoundException e)
 					{
-						// re-download manifest
 						e.printStackTrace();
 					}
 
 					refresh = true;
-					//D.out(f.list());
 				}
 
 				@Override public void onFinish(boolean failed)
 				{
 					if (!failed && refresh)
 					{
-						D.out("SENDING EVENT");
 						BusHelper.getInstance().post(new RefreshContentEvent());
 					}
-
-					/*App insersion = ViewParser.buildGson(CacheManager.getInstance().readFileAsJson(Constants.FILE_ENTRY_POINT), App.class);
-					StormApplication.setAppEntry(insersion);
-
-					String pageClass = insersion.getPageDescriptor(insersion.getVector()).getType();
-					Intent main = new Intent(context, ((StormApplication)context.getApplicationContext()).getIntentHelper().getActivityForPage(context, pageClass));
-					main.putExtra(Constants.EXTRA_FILE_NAME, insersion.getVector());
-					context.startActivity(main);*/
 				}
 			});
 		}
@@ -201,13 +209,8 @@ public class UpdateManager
 	/**
 	 * Purges files in a folder that do not exist in the manifest
 	 *
-	 * @param folderPath
-	 *            The folder to check, can be either,
-	 *            {@link Constants#FOLDER_PAGES},
-	 *            {@link Constants#FOLDER_LANGUAGES}, or
-	 *            {@link Constants#FOLDER_CONTENT}
-	 * @param fileList
-	 *            The list of files to delete
+	 * @param folderPath The folder to check, can be either, {@link Constants#FOLDER_PAGES}, {@link Constants#FOLDER_LANGUAGES}, {@link Constants#FOLDER_CONTENT}, or {@link Constants#FOLDER_DATA}
+	 * @param fileList The list of files to delete
 	 */
 	public void removeFiles(String folderPath, String[] fileList)
 	{
@@ -218,67 +221,44 @@ public class UpdateManager
 				if (!TextUtils.isEmpty(s))
 				{
 					boolean deleted = new File(folderPath, s).delete();
-					//D.out("%s deleted? %s", s, deleted);
+
+					if (!deleted)
+					{
+						Debug.out("%s was not deleted successfully", s);
+					}
 				}
 			}
 		}
 	}
 
 	/**
-	 * Checks the integrety of each file currently stored in cache
+	 * Checks the integrity of each file currently stored in cache
+	 * <p/>
+	 * This method compares the file hash with the hash in the manifest. If the hashes do not match, the file is discarded.
 	 */
-	public void integrityCheck()
+	public void integrityCheck(File contentPath)
 	{
-		JsonObject manifest = new JsonParser().parse(CacheManager.getInstance(context).readFileAsString(Constants.FILE_MANIFEST)).getAsJsonObject();
+		JsonObject manifest = new JsonParser().parse(ContentSettings.getInstance().getFileManager().readFileAsString(new File(contentPath, Constants.FILE_MANIFEST))).getAsJsonObject();
 
-		// check app.json
-		//String appHash = manifest.get(null)
+		String[] sections = {"pages", "data", "content", "languages"};
+		String[] folders = {Constants.FOLDER_PAGES, Constants.FOLDER_DATA, Constants.FOLDER_CONTENT, Constants.FOLDER_LANGUAGES};
 
-		// pages
-		JsonArray pages = manifest.get("pages").getAsJsonArray();
-		for (JsonElement p : pages)
+		for (int index = 0; index < sections.length; index++)
 		{
-			JsonObject page = p.getAsJsonObject();
-			String filename = page.get("src").getAsString();
-			String requiredHash = page.get("hash").getAsString();
-			String actualHash = CacheManager.getInstance(context).getFileHash(Constants.FOLDER_PAGES + "/" + filename);
-
-			//D.out("%s - %s = %s? %s", filename, requiredHash, actualHash, requiredHash.equals(actualHash));
-			if (!actualHash.equals(requiredHash))
+			JsonArray pages = manifest.get(sections[index]).getAsJsonArray();
+			for (JsonElement p : pages)
 			{
-				// download file again
-			}
-		}
+				JsonObject page = p.getAsJsonObject();
+				String filename = page.get("src").getAsString();
+				String requiredHash = page.get("hash").getAsString();
+				String actualHash = ContentSettings.getInstance().getFileManager().getFileHash(contentPath.getAbsolutePath() + "/" + folders[index] + "/" + filename);
 
-		// content
-		JsonArray content = manifest.get("content").getAsJsonArray();
-		for (JsonElement p : content)
-		{
-			JsonObject page = p.getAsJsonObject();
-			String filename = page.get("src").getAsString();
-			String requiredHash = page.get("hash").getAsString();
-			String actualHash = CacheManager.getInstance(context).getFileHash(Constants.FOLDER_CONTENT + "/" + filename);
+				Debug.out("%s - %s = %s? %s", filename, requiredHash, actualHash, requiredHash.equals(actualHash));
 
-			//D.out("%s - %s = %s? %s", filename, requiredHash, actualHash, requiredHash.equals(actualHash));
-			if (!actualHash.equals(requiredHash))
-			{
-				// download file again
-			}
-		}
-
-		// pages
-		JsonArray languages = manifest.get("languages").getAsJsonArray();
-		for (JsonElement p : languages)
-		{
-			JsonObject page = p.getAsJsonObject();
-			String filename = page.get("src").getAsString();
-			String requiredHash = page.get("hash").getAsString();
-			String actualHash = CacheManager.getInstance(context).getFileHash(Constants.FOLDER_LANGUAGES + "/" + filename);
-
-			//D.out("%s - %s = %s? %s", filename, requiredHash, actualHash, requiredHash.equals(actualHash));
-			if (!actualHash.equals(requiredHash))
-			{
-				// download file again
+				if (!actualHash.equals(requiredHash))
+				{
+					// TODO: remove file
+				}
 			}
 		}
 	}
