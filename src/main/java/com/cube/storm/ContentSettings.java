@@ -1,6 +1,8 @@
 package com.cube.storm;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.listener.UpdateListener;
@@ -131,7 +133,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder updateListener(UpdateListener listener)
+		public Builder updateListener(@Nullable UpdateListener listener)
 		{
 			construct.updateListener = listener;
 			return this;
@@ -144,7 +146,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder appId(String id)
+		public Builder appId(@NonNull String id)
 		{
 			construct.appId = id;
 			return this;
@@ -159,7 +161,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder appId(String system, int society, int app)
+		public Builder appId(@NonNull String system, int society, int app)
 		{
 			construct.appId = system + "_" + society + "_" + app;
 			return this;
@@ -172,7 +174,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder contentBaseUrl(String baseUrl)
+		public Builder contentBaseUrl(@NonNull String baseUrl)
 		{
 			construct.contentBaseUrl = baseUrl;
 			return this;
@@ -185,7 +187,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder contentVersion(String version)
+		public Builder contentVersion(@NonNull String version)
 		{
 			construct.contentVersion = version;
 			return this;
@@ -198,7 +200,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder contentEnvironment(Environment environment)
+		public Builder contentEnvironment(@NonNull Environment environment)
 		{
 			construct.contentEnvironment = environment;
 			return this;
@@ -213,7 +215,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder contentUrl(String baseUrl, String version, Environment environment)
+		public Builder contentUrl(@NonNull String baseUrl, @NonNull String version, @NonNull Environment environment)
 		{
 			construct.contentBaseUrl = baseUrl;
 			construct.contentVersion = version;
@@ -229,7 +231,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder storagePath(String path)
+		public Builder storagePath(@NonNull String path)
 		{
 			construct.storagePath = path;
 			return this;
@@ -242,7 +244,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder fileManager(FileManager manager)
+		public Builder fileManager(@NonNull FileManager manager)
 		{
 			construct.fileManager = manager;
 			return this;
@@ -255,7 +257,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder defaultResolver(Resolver defaultResolver)
+		public Builder defaultResolver(@NonNull Resolver defaultResolver)
 		{
 			construct.defaultResolver = defaultResolver;
 			return this;
