@@ -5,10 +5,17 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.cube.storm.content.lib.Environment;
+import com.cube.storm.content.lib.parser.BundleBuilder;
+import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
+import com.cube.storm.util.lib.resolver.AssetsResolver;
+import com.cube.storm.util.lib.resolver.FileResolver;
 import com.cube.storm.util.lib.resolver.Resolver;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import lombok.Getter;
 
@@ -43,6 +50,11 @@ public class ContentSettings
 
 		return instance;
 	}
+
+	/**
+	 * Default private constructor
+	 */
+	private ContentSettings(){}
 
 	/**
 	 * The default resolver for the bundled content
@@ -91,14 +103,31 @@ public class ContentSettings
 	@Getter private UpdateListener updateListener;
 
 	/**
-	 * Default private constructor
+	 * The gson builder class used to build classes such as manifest
 	 */
-	private ContentSettings(){}
+	@Getter private BundleBuilder bundleBuilder;
+
+	/**
+	 * Factory class responsible for loading a file from disk based on its Uri
+	 */
+	@Getter private FileFactory fileFactory;
+
+	/**
+	 * Uri resolver used to load a file based on it's protocol.
+	 */
+	@Getter private Map<String, Resolver> uriResolvers = new LinkedHashMap<String, Resolver>(2);
 
 	/**
 	 * The builder class for {@link com.cube.storm.ContentSettings}. Use this to create a new {@link com.cube.storm.ContentSettings} instance
 	 * with the customised properties specific for your project.
-	 *
+	 * <p/>
+	 * The following methods are required to be set before you can download any content
+	 * <ul>
+	 *     <li>{@link #appId(String)} or {@link #appId(String, int, int)}</li>
+	 *     <li>{@link #contentBaseUrl(String)}</li>
+	 *     <li>{@link #contentVersion}</li>
+	 * </ul>
+	 * <p/>
 	 * Call {@link #build()} to build the settings object.
 	 */
 	public static class Builder
@@ -121,9 +150,18 @@ public class ContentSettings
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
 
-			defaultResolver(new CacheResolver(context));
+			fileFactory(new FileFactory(){});
+			bundleBuilder(new BundleBuilder(){});
+
+			CacheResolver cacheResolver = new CacheResolver(context);
+			registerUriResolver("file", new FileResolver());
+			registerUriResolver("assets", new AssetsResolver(this.context));
+			registerUriResolver("cache", cacheResolver);
+			defaultResolver(cacheResolver);
+
 			storagePath(this.context.getFilesDir().getAbsolutePath());
 			fileManager(FileManager.getInstance());
+			contentEnvironment(Environment.LIVE);
 		}
 
 		/**
@@ -238,6 +276,19 @@ public class ContentSettings
 		}
 
 		/**
+		 * Sets the default {@link com.cube.storm.content.lib.parser.BundleBuilder} for the module
+		 *
+		 * @param bundleBuilder The new {@link com.cube.storm.content.lib.parser.BundleBuilder}
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder bundleBuilder(BundleBuilder bundleBuilder)
+		{
+			construct.bundleBuilder = bundleBuilder;
+			return this;
+		}
+
+		/**
 		 * Set the default file manager
 		 *
 		 * @param manager The new file manager
@@ -260,6 +311,33 @@ public class ContentSettings
 		public Builder defaultResolver(@NonNull Resolver defaultResolver)
 		{
 			construct.defaultResolver = defaultResolver;
+			return this;
+		}
+
+		/**
+		 * Registers a uri resolver
+		 *
+		 * @param protocol The string protocol to register
+		 * @param resolver The resolver to use for the registered protocol
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder registerUriResolver(String protocol, Resolver resolver)
+		{
+			construct.uriResolvers.put(protocol, resolver);
+			return this;
+		}
+
+		/**
+		 * Sets the default {@link com.cube.storm.content.lib.factory.FileFactory} for the module
+		 *
+		 * @param fileFactory The new {@link com.cube.storm.content.lib.factory.FileFactory}
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder fileFactory(FileFactory fileFactory)
+		{
+			construct.fileFactory = fileFactory;
 			return this;
 		}
 
