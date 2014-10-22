@@ -145,6 +145,55 @@ public class ContentSettings
 		}
 
 		/**
+		 * Set the content URL to download bundles from
+		 *
+		 * @param baseUrl The base URL to download content from. Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
+		 */
+		public Builder contentBaseUrl(String baseUrl)
+		{
+			construct.contentBaseUrl = baseUrl;
+			return this;
+		}
+
+		/**
+		 * Set the content URL to download bundles from
+		 *
+		 * @param version The version of the endpoint to download content from. Example version {@code v1.0}. Version must not end in a slash
+		 */
+		public Builder contentVersion(String version)
+		{
+			construct.contentVersion = version;
+			return this;
+		}
+
+		/**
+		 * Set the content URL to download bundles from
+		 *
+		 * @param environment The environment of the endpoint.
+		 */
+		public Builder contentEnvironment(Environment environment)
+		{
+			construct.contentEnvironment = environment;
+			return this;
+		}
+
+		/**
+		 * Set the content URL to download bundles from
+		 *
+		 * @param baseUrl The base URL to download content from. Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
+		 * @param version The version of the endpoint to download content from. Example version {@code v1.0}. Version must not end in a slash
+		 * @param environment The environment of the endpoint.
+		 */
+		public Builder contentUrl(String baseUrl, String version, Environment environment)
+		{
+			construct.contentBaseUrl = baseUrl;
+			construct.contentVersion = version;
+			construct.contentEnvironment = environment;
+
+			return this;
+		}
+
+		/**
 		 * Set the path to use as the storage dir
 		 *
 		 * @param path The file dir path to the storage folder
