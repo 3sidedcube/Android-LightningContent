@@ -2,6 +2,7 @@ package com.cube.storm;
 
 import android.content.Context;
 
+import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.Resolver;
@@ -56,6 +57,32 @@ public class ContentSettings
 	@Getter private String storagePath;
 
 	/**
+	 * Storm app ID in the format {@code SYSTEM_SOCIETYID_APPID}
+	 */
+	@Getter private String appId;
+
+	/**
+	 * Base content URL to download from.
+	 *
+	 * Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
+	 */
+	@Getter private String contentBaseUrl;
+
+	/**
+	 * Content URL version of the API
+	 *
+	 * Example version {@code v1.0}. Version must not end in a slash
+	 */
+	@Getter private String contentVersion;
+
+	/**
+	 * Content environment
+	 *
+	 * Defaults to {@link com.cube.storm.content.lib.Environment#LIVE}
+	 */
+	@Getter private Environment contentEnvironment;
+
+	/**
 	 * Default private constructor
 	 */
 	private ContentSettings(){}
@@ -92,7 +119,37 @@ public class ContentSettings
 		}
 
 		/**
+		 * Set the app id to use when dealing with Storm CMS
+		 *
+		 * @param id The ID of the app in the format {@code SYSTEM_SOCIETYID_APPID}
+		 */
+		public Builder appId(String id)
+		{
+			construct.appId = id;
+			return this;
+		}
+
+		/**
+		 * Set the app id to use when dealing with Storm CMS
+		 *
+		 * @param system The system name
+		 * @param society The society ID
+		 * @param app The app number
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder appId(String system, int society, int app)
+		{
+			construct.appId = system + "_" + society + "_" + app;
+			return this;
+		}
+
+		/**
 		 * Set the path to use as the storage dir
+		 *
+		 * @param path The file dir path to the storage folder
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder storagePath(String path)
 		{
@@ -101,7 +158,11 @@ public class ContentSettings
 		}
 
 		/**
-		 * Set the path to use as the storage dir
+		 * Set the default file manager
+		 *
+		 * @param manager The new file manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
 		public Builder fileManager(FileManager manager)
 		{
