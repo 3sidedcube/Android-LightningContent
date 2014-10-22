@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Callum Taylor
  * @project StormContent
  */
-public class UpdateManager
+public abstract class UpdateManager
 {
 	/**
 	 * Downloads the latest full bundle from the server

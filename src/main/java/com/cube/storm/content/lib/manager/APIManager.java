@@ -14,7 +14,7 @@ import net.callumtaylor.asynchttp.response.JsonResponseHandler;
  * @author Callum Taylor
  * @project StormContent
  */
-public class APIManager
+public abstract class APIManager
 {
 	/**
 	 * Checks the API for any delta updates.
