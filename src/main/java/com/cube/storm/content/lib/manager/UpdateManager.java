@@ -7,7 +7,6 @@ import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.event.RefreshContentEvent;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
 import com.cube.storm.content.lib.helper.BusHelper;
-import com.cube.storm.content.lib.helper.ReadHelper;
 import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -18,8 +17,6 @@ import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -151,7 +148,7 @@ public class UpdateManager
 						File contentPath = new File(getContent());
 						File manifest = new File(contentPath, Constants.FILE_MANIFEST);
 
-						JsonObject manifestJson = ReadHelper.readJsonFromFileStream(new FileInputStream(manifest)).getAsJsonObject();
+						JsonObject manifestJson = ContentSettings.getInstance().getFileManager().readFileAsJson(manifest).getAsJsonObject();
 
 						// Create map of expected data
 						Map<String, String[]> expectedContent = new HashMap<String, String[]>();
@@ -187,7 +184,7 @@ public class UpdateManager
 
 						integrityCheck(contentPath);
 					}
-					catch (FileNotFoundException e)
+					catch (Exception e)
 					{
 						e.printStackTrace();
 					}
