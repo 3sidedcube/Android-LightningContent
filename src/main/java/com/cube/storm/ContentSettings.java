@@ -24,7 +24,7 @@ import lombok.Getter;
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
  * a new {@link com.cube.storm.ContentSettings.Builder} object in your {@link android.app.Application} singleton class.
- *
+ * <p/>
  * This class should not be directly instantiated.
  *
  * @author Callum Taylor
@@ -85,21 +85,21 @@ public class ContentSettings
 
 	/**
 	 * Base content URL to download from.
-	 *
+	 * <p/>
 	 * Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
 	 */
 	@Getter private String contentBaseUrl;
 
 	/**
 	 * Content URL version of the API
-	 *
+	 * <p/>
 	 * Example version {@code v1.0}. Version must not end in a slash
 	 */
 	@Getter private String contentVersion;
 
 	/**
 	 * Content environment
-	 *
+	 * <p/>
 	 * Defaults to {@link com.cube.storm.content.lib.Environment#LIVE}
 	 */
 	@Getter private Environment contentEnvironment;
