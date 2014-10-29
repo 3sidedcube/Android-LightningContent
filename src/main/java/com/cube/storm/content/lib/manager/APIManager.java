@@ -9,41 +9,13 @@ import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
  * <p/>
- * This class should not be directly instantiated.
+ * Access this class via {@link com.cube.storm.ContentSettings#getApiManager()}. Do not instantiate this class directly
  *
  * @author Callum Taylor
  * @project StormContent
  */
-public class APIManager
+public abstract class APIManager
 {
-	private static APIManager instance;
-
-	/**
-	 * Gets the api manager singleton or creates one if its null
-	 *
-	 * @return The api manager singleton
-	 */
-	public static APIManager getInstance()
-	{
-		if (instance == null)
-		{
-			synchronized (APIManager.class)
-			{
-				if (instance == null)
-				{
-					instance = new APIManager();
-				}
-			}
-		}
-
-		return instance;
-	}
-
-	/**
-	 * Default private constructor
-	 */
-	private APIManager(){}
-
 	/**
 	 * Checks the API for any delta updates.
 	 * <p/>

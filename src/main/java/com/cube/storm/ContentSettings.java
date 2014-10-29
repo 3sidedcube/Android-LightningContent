@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.cube.storm.content.lib.Environment;
+import com.cube.storm.content.lib.manager.APIManager;
+import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
 import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.UpdateListener;
@@ -22,7 +24,7 @@ import lombok.Getter;
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
  * a new {@link com.cube.storm.ContentSettings.Builder} object in your {@link android.app.Application} singleton class.
- *
+ * <p/>
  * This class should not be directly instantiated.
  *
  * @author Callum Taylor
@@ -62,6 +64,16 @@ public class ContentSettings
 	@Getter private FileManager fileManager;
 
 	/**
+	 * Default {@link com.cube.storm.content.lib.manager.APIManager} to use throughout the module
+	 */
+	@Getter private APIManager apiManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.manager.UpdateManager} to use throughout the module
+	 */
+	@Getter private UpdateManager updateManager;
+
+	/**
 	 * The path to the storage folder on disk
 	 */
 	@Getter private String storagePath;
@@ -73,21 +85,21 @@ public class ContentSettings
 
 	/**
 	 * Base content URL to download from.
-	 *
+	 * <p/>
 	 * Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
 	 */
 	@Getter private String contentBaseUrl;
 
 	/**
 	 * Content URL version of the API
-	 *
+	 * <p/>
 	 * Example version {@code v1.0}. Version must not end in a slash
 	 */
 	@Getter private String contentVersion;
 
 	/**
 	 * Content environment
-	 *
+	 * <p/>
 	 * Defaults to {@link com.cube.storm.content.lib.Environment#LIVE}
 	 */
 	@Getter private Environment contentEnvironment;
@@ -144,6 +156,9 @@ public class ContentSettings
 		{
 			this.construct = new ContentSettings();
 			this.context = context.getApplicationContext();
+
+			APIManager(new APIManager(){});
+			UpdateManager(new UpdateManager(){});
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
@@ -291,6 +306,32 @@ public class ContentSettings
 		public Builder fileManager(@NonNull FileManager manager)
 		{
 			construct.fileManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default API manager
+		 *
+		 * @param manager The new API manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder APIManager(@NonNull APIManager manager)
+		{
+			construct.apiManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default Update manager
+		 *
+		 * @param manager The new Update manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder UpdateManager(@NonNull UpdateManager manager)
+		{
+			construct.updateManager = manager;
 			return this;
 		}
 
