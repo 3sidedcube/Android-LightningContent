@@ -74,7 +74,7 @@ public abstract class APIManager
 
 		try
 		{
-			appId = ContentSettings.getInstance().getAppId().split("_")[2];
+			appId = ContentSettings.getInstance().getAppId().split("-")[2];
 		}
 		catch (Exception e)
 		{
