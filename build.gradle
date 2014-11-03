@@ -41,7 +41,7 @@ dependencies {
 	compile 'com.squareup:otto:1.3.5'
 	compile 'org.xeustechnologies:jtar:1.1'
 
-	compile 'com.3sidedcube.storm:util:0.1a'
+	compile 'com.3sidedcube.storm:util:0.2'
 }
 
 def srcJava = 'src/main/java'
