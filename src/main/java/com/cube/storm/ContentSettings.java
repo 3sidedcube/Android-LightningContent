@@ -125,6 +125,11 @@ public class ContentSettings
 	@Getter private Map<String, Resolver> uriResolvers = new LinkedHashMap<String, Resolver>(2);
 
 	/**
+	 * Authorization token to use when downloading updates/bundles from the test environment
+	 */
+	@Getter private String authorizationToken;
+
+	/**
 	 * The builder class for {@link com.cube.storm.ContentSettings}. Use this to create a new {@link com.cube.storm.ContentSettings} instance
 	 * with the customised properties specific for your project.
 	 * <p/>
@@ -241,6 +246,8 @@ public class ContentSettings
 
 		/**
 		 * Set the content URL to download bundles from
+		 * <p/>
+		 * If {@link com.cube.storm.content.lib.Environment#TEST} is set, you <b>must</b> call {@link #authorizationToken(String)}
 		 *
 		 * @param environment The environment of the endpoint.
 		 *
@@ -249,6 +256,19 @@ public class ContentSettings
 		public Builder contentEnvironment(@NonNull Environment environment)
 		{
 			construct.contentEnvironment = environment;
+			return this;
+		}
+
+		/**
+		 * Set the authorization header to be used for test environment
+		 *
+		 * @param token The valid authorization token
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder authorizationToken(@NonNull String token)
+		{
+			construct.authorizationToken = token;
 			return this;
 		}
 
