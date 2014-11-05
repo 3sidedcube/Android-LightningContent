@@ -1,10 +1,18 @@
 package com.cube.storm.content.lib.manager;
 
+import android.text.TextUtils;
+
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
+import com.cube.storm.content.lib.Environment;
 
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
+
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
+
+import java.util.ArrayList;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -36,14 +44,26 @@ public abstract class APIManager
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			throw new Error("App ID set in ContentSettings$appId is an incorrect format");
+			throw new Error("App ID set in ContentSettings#appId is an incorrect format");
 		}
 
 		String urlPart = String.format(Constants.API_CONTENT_UPDATE, appId, lastUpdate, ContentSettings.getInstance().getContentEnvironment().getEnvironmentLabel());
 
+		ArrayList<Header> headers = new ArrayList<Header>();
+
+		if (ContentSettings.getInstance().getContentEnvironment() == Environment.TEST)
+		{
+			if (TextUtils.isEmpty(ContentSettings.getInstance().getAuthorizationToken()))
+			{
+				throw new Error("Authorization token is empty, you must set this in ContentSettings$Builder.authorizationToken(String)");
+			}
+
+			headers.add(new BasicHeader("Authorization", "global " + ContentSettings.getInstance().getAuthorizationToken()));
+		}
+
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
 		client.setAllowRedirect(false);
-		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, response);
+		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, headers, response);
 	}
 
 	/**
@@ -89,8 +109,20 @@ public abstract class APIManager
 			urlPart += "&timestamp=" + lastUpdate;
 		}
 
+		ArrayList<Header> headers = new ArrayList<Header>();
+
+		if (ContentSettings.getInstance().getContentEnvironment() == Environment.TEST)
+		{
+			if (TextUtils.isEmpty(ContentSettings.getInstance().getAuthorizationToken()))
+			{
+				throw new Error("Authorization token is empty, you must set this in ContentSettings$Builder.authorizationToken(String)");
+			}
+
+			headers.add(new BasicHeader("Authorization", "global " + ContentSettings.getInstance().getAuthorizationToken()));
+		}
+
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
 		client.setAllowRedirect(false);
-		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, response);
+		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, headers, response);
 	}
 }
