@@ -58,7 +58,7 @@ public abstract class APIManager
 				throw new Error("Authorization token is empty, you must set this in ContentSettings$Builder.authorizationToken(String)");
 			}
 
-			headers.add(new BasicHeader("Authorization", "global " + ContentSettings.getInstance().getAuthorizationToken()));
+			headers.add(new BasicHeader("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken()));
 		}
 
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
@@ -118,7 +118,7 @@ public abstract class APIManager
 				throw new Error("Authorization token is empty, you must set this in ContentSettings$Builder.authorizationToken(String)");
 			}
 
-			headers.add(new BasicHeader("Authorization", "global " + ContentSettings.getInstance().getAuthorizationToken()));
+			headers.add(new BasicHeader("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken()));
 		}
 
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
