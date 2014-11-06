@@ -5,11 +5,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.cube.storm.content.lib.Environment;
+import com.cube.storm.content.lib.factory.FileFactory;
+import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.manager.APIManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
-import com.cube.storm.content.lib.factory.FileFactory;
-import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.AssetsResolver;
@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
@@ -61,73 +62,73 @@ public class ContentSettings
 	/**
 	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
 	 */
-	@Getter private FileManager fileManager;
+	@Getter @Setter private FileManager fileManager;
 
 	/**
 	 * Default {@link com.cube.storm.content.lib.manager.APIManager} to use throughout the module
 	 */
-	@Getter private APIManager apiManager;
+	@Getter @Setter private APIManager apiManager;
 
 	/**
 	 * Default {@link com.cube.storm.content.lib.manager.UpdateManager} to use throughout the module
 	 */
-	@Getter private UpdateManager updateManager;
+	@Getter @Setter private UpdateManager updateManager;
 
 	/**
 	 * The path to the storage folder on disk
 	 */
-	@Getter private String storagePath;
+	@Getter @Setter private String storagePath;
 
 	/**
 	 * Storm app ID in the format {@code SYSTEM-SOCIETYID-APPID}
 	 */
-	@Getter private String appId;
+	@Getter @Setter private String appId;
 
 	/**
 	 * Base content URL to download from.
 	 * <p/>
 	 * Example url {@code https://demo.stormcorp.co/}. Link must end in a slash
 	 */
-	@Getter private String contentBaseUrl;
+	@Getter @Setter private String contentBaseUrl;
 
 	/**
 	 * Content URL version of the API
 	 * <p/>
 	 * Example version {@code v1.0}. Version must not end in a slash
 	 */
-	@Getter private String contentVersion;
+	@Getter @Setter private String contentVersion;
 
 	/**
 	 * Content environment
 	 * <p/>
 	 * Defaults to {@link com.cube.storm.content.lib.Environment#LIVE}
 	 */
-	@Getter private Environment contentEnvironment;
+	@Getter @Setter private Environment contentEnvironment;
 
 	/**
 	 * Listener instance for updates downloaded
 	 */
-	@Getter private UpdateListener updateListener;
+	@Getter @Setter private UpdateListener updateListener;
 
 	/**
 	 * The gson builder class used to build classes such as manifest
 	 */
-	@Getter private BundleBuilder bundleBuilder;
+	@Getter @Setter private BundleBuilder bundleBuilder;
 
 	/**
 	 * Factory class responsible for loading a file from disk based on its Uri
 	 */
-	@Getter private FileFactory fileFactory;
+	@Getter @Setter private FileFactory fileFactory;
 
 	/**
 	 * Uri resolver used to load a file based on it's protocol.
 	 */
-	@Getter private Map<String, Resolver> uriResolvers = new LinkedHashMap<String, Resolver>(2);
+	@Getter @Setter private Map<String, Resolver> uriResolvers = new LinkedHashMap<String, Resolver>(2);
 
 	/**
 	 * Authorization token to use when downloading updates/bundles from the test environment
 	 */
-	@Getter private String authorizationToken;
+	@Getter @Setter private String authorizationToken;
 
 	/**
 	 * The builder class for {@link com.cube.storm.ContentSettings}. Use this to create a new {@link com.cube.storm.ContentSettings} instance
