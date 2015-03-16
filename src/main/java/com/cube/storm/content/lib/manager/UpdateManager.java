@@ -1,12 +1,11 @@
 package com.cube.storm.content.lib.manager;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
-import com.cube.storm.content.lib.event.RefreshContentEvent;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
-import com.cube.storm.content.lib.helper.BusHelper;
 import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -26,7 +25,7 @@ import java.util.Map;
  * Access this class via {@link com.cube.storm.ContentSettings#getUpdateManager()}. Do not instantiate this class directly
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LightningContent
  */
 public abstract class UpdateManager
 {
@@ -37,19 +36,6 @@ public abstract class UpdateManager
 	{
 		ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
 		{
-			@Override public void onFailure()
-			{
-				try
-				{
-					Debug.out(getConnectionInfo());
-					Debug.out(getContent());
-				}
-				catch (Exception e)
-				{
-					Debug.out(e);
-				}
-			}
-
 			@Override public void onSuccess()
 			{
 				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
@@ -96,19 +82,6 @@ public abstract class UpdateManager
 	{
 		ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
-			@Override public void onFailure()
-			{
-				try
-				{
-					Debug.out(getConnectionInfo());
-					Debug.out(getContent());
-				}
-				catch (Exception e)
-				{
-					Debug.out(e);
-				}
-			}
-
 			@Override public void onSuccess()
 			{
 				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
@@ -153,28 +126,11 @@ public abstract class UpdateManager
 	 */
 	public void downloadUpdates(String endpoint)
 	{
-		Debug.out("Downloading from %s", endpoint);
-
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
 			AsyncHttpClient client = new AsyncHttpClient(endpoint);
 			client.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath())
 			{
-				private boolean refresh = false;
-
-				@Override public void onFailure()
-				{
-					try
-					{
-						Debug.out(getConnectionInfo());
-						Debug.out(getContent());
-					}
-					catch (Exception e)
-					{
-						Debug.out(e);
-					}
-				}
-
 				@Override public void onSuccess()
 				{
 					try
@@ -222,16 +178,12 @@ public abstract class UpdateManager
 					{
 						e.printStackTrace();
 					}
-
-					refresh = true;
 				}
 
 				@Override public void onFinish(boolean failed)
 				{
-					if (!failed && refresh)
+					if (!failed)
 					{
-						BusHelper.getInstance().post(new RefreshContentEvent());
-
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
@@ -291,7 +243,7 @@ public abstract class UpdateManager
 
 				if (actualHash != null && !requiredHash.equals(actualHash))
 				{
-					Debug.out("File %s has the wrong hash! Expected %s but got %s", filename, requiredHash, actualHash);
+					Log.w("LightningContent", String.format("File %s has the wrong hash! Expected %s but got %s", filename, requiredHash, actualHash));
 				}
 			}
 		}
