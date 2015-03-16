@@ -6,7 +6,7 @@ package com.cube.storm.content.lib.listener;
  * Use this interface to refresh your app when a new bundle has been downloaded
  *
  * @author Callum Taylor
- * @project Storm
+ * @project LightningContent
  */
 public interface UpdateListener
 {

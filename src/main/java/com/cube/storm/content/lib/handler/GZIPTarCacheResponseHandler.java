@@ -1,7 +1,5 @@
 package com.cube.storm.content.lib.handler;
 
-import com.cube.storm.util.lib.debug.Debug;
-
 import net.callumtaylor.asynchttp.AsyncHttpClient.ClientExecutorTask;
 import net.callumtaylor.asynchttp.response.AsyncHttpResponseHandler;
 
@@ -32,7 +30,7 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 
 	@Override public void onBeginPublishedDownloadProgress(InputStream stream, ClientExecutorTask client, long totalLength) throws SocketTimeoutException, IOException
 	{
-		TarInputStream tis = new TarInputStream(new GZIPInputStream(stream, Math.max(8196, totalLength > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int)totalLength)));
+		TarInputStream tis = new TarInputStream(new GZIPInputStream(stream, 8196));
 		TarEntry file;
 		long totalRead = 0;
 
@@ -43,12 +41,9 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 			if (file.isDirectory())
 			{
 				File f = new File(mFilePath + "/" + file.getName());
-				Debug.out("created %s, %s", f.getAbsoluteFile(), f.mkdirs());
-
 				continue;
 			}
 
-			Debug.out("writing %s", file.getName());
 			FileOutputStream fos = new FileOutputStream(mFilePath + "/" + file.getName());
 			BufferedOutputStream dest = new BufferedOutputStream(fos);
 

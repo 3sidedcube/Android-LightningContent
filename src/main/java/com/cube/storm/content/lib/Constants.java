@@ -17,7 +17,4 @@ public class Constants
 	public static final String FOLDER_DATA = "data";
 	public static final String FILE_MANIFEST = "manifest.json";
 	public static final String FILE_ENTRY_POINT = "app.json";
-
-	// Service actios
-	public static final String ACTION_UPDATE_REFRESH = "com.cube.storm.content.refresh";
 }

@@ -1,6 +1,8 @@
 package com.cube.storm.content.lib.manager;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.cube.storm.ContentSettings;
 import com.google.gson.JsonElement;
@@ -14,7 +16,30 @@ import java.util.Map;
 import lombok.Getter;
 
 /**
- * Identifiers manager class used for loading the identifiers structure
+ * Identifiers manager class used for loading the identifiers structure found in the {@code data/} folder in the bundle.
+ * <p/>
+ * The identifiers file is used to allow the use of inter-app linking between different CMS systems. Each "app" object
+ * is identified by the key of the object, where the key is the app ID defined in the CMS.
+ * <p/>
+ * Identifiers structure
+ * <pre>
+ {
+	 "ARC_STORM-1-1": {
+		 "android": {
+		 	"packageName": "com.cube.arc.fa"
+		 },
+		 "ios": {
+		 "countryCode": "us",
+			 "iTunesId": "529160691",
+			 "launcher": "ARCFA://"
+		 },
+		 "name": {
+			 "en": "First aid",
+			 "es": ""
+	 	}
+ 	}
+ }
+ * </pre>
  *
  * @author Callum Taylor
  * @project LightningContent
@@ -29,19 +54,18 @@ public class IdentifiersManager
 	{
 		if (instance == null)
 		{
-			synchronized (IdentifiersManager.class)
-			{
-				if (instance == null)
-				{
-					instance = new IdentifiersManager();
-				}
-			}
+			instance = new IdentifiersManager();
 		}
 
 		return instance;
 	}
 
-	public void loadApps(Uri path)
+	/**
+	 * Loads the file from the {@param path}
+	 *
+	 * @param path The path to the {@code identifiers.json} file
+	 */
+	public void loadApps(@NonNull Uri path)
 	{
 		try
 		{
@@ -75,7 +99,15 @@ public class IdentifiersManager
 		}
 	}
 
-	public String getAppPackageName(String id)
+	/**
+	 * Looks up the package name of an app from its storm ID
+	 *
+	 * @param id The storm ID
+	 *
+	 * @return The package name, or null if it was not found
+	 */
+	@Nullable
+	public String getAppPackageName(@NonNull String id)
 	{
 		return apps == null ? null : apps.get(id);
 	}

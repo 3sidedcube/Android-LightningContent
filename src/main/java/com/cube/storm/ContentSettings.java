@@ -3,6 +3,7 @@ package com.cube.storm;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.factory.FileFactory;
@@ -27,9 +28,34 @@ import lombok.Setter;
  * a new {@link com.cube.storm.ContentSettings.Builder} object in your {@link android.app.Application} singleton class.
  * <p/>
  * This class should not be directly instantiated.
+ * <p/>
+ * Example instantiation code to include. You should include this code in your {@link android.app.Application} instance, before instantiating
+ * your other Storm Settings classes.
+ * <p/>
+ * Here's an example settings
+ <pre>
+ContentSettings contentSettings = new ContentSettings.Builder(this)
+	.appId("STORM-1-1")
+	.contentBaseUrl("http://storm.cubeapis.com/")
+	.contentVersion("latest")
+	.updateListener(new UpdateListener()
+	{
+		@Override public void onUpdateDownloaded()
+		{
+			// bundle update downloaded
+		}
+	})
+	.build();
+ </pre>
+ *
+ * The update listener gets called when a bundle has been downloaded and extracted to the cache directory supplied
+ * by the {@link com.cube.storm.ContentSettings#storagePath} which defaults to {@link android.content.Context#getFilesDir().getAbsolutePath())}.
+ * <p/>
+ * If you ae using the {@code LighteningLanguage} module, you should include the line {@code languageSettings.reloadLanguage(getApplicationContext());} in order
+ * for the language pack to be applied to the current context of the application.
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LighteningContent
  */
 public class ContentSettings
 {
@@ -171,7 +197,7 @@ public class ContentSettings
 
 			registerUriResolver("file", new FileResolver());
 			registerUriResolver("assets", new AssetsResolver(this.context));
-			registerUriResolver("cache", new CacheResolver(this.context));
+			registerUriResolver("cache", new CacheResolver());
 
 			storagePath(this.context.getFilesDir().getAbsolutePath());
 			fileManager(FileManager.getInstance());
@@ -311,7 +337,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder bundleBuilder(BundleBuilder bundleBuilder)
+		public Builder bundleBuilder(@NonNull BundleBuilder bundleBuilder)
 		{
 			construct.bundleBuilder = bundleBuilder;
 			return this;
@@ -364,7 +390,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder registerUriResolver(String protocol, Resolver resolver)
+		public Builder registerUriResolver(@NonNull String protocol, @NonNull Resolver resolver)
 		{
 			construct.uriResolvers.put(protocol, resolver);
 			return this;
@@ -377,7 +403,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder registerUriResolver(Map<String, Resolver> resolvers)
+		public Builder registerUriResolver(@NonNull Map<String, Resolver> resolvers)
 		{
 			construct.uriResolvers.putAll(resolvers);
 			return this;
@@ -390,7 +416,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder fileFactory(FileFactory fileFactory)
+		public Builder fileFactory(@NonNull FileFactory fileFactory)
 		{
 			construct.fileFactory = fileFactory;
 			return this;
@@ -399,11 +425,21 @@ public class ContentSettings
 		/**
 		 * Builds the final settings object and sets its instance. Use {@link #getInstance()} to retrieve the settings
 		 * instance.
+		 * <p/>
+		 * Throws {@link java.lang.IllegalAccessException} if {@link #appId}, {@link #contentBaseUrl}, or {@link #contentVersion} has
+		 * not been set.
 		 *
 		 * @return The newly set {@link com.cube.storm.ContentSettings} instance
 		 */
 		public ContentSettings build()
 		{
+			if (TextUtils.isEmpty(construct.appId)
+			|| TextUtils.isEmpty(construct.contentBaseUrl)
+			|| TextUtils.isEmpty(construct.contentVersion))
+			{
+				throw new IllegalArgumentException("You must provide an app id, content url, and version.");
+			}
+
 			return (ContentSettings.instance = construct);
 		}
 	}
