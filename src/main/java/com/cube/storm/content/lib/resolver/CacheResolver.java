@@ -1,6 +1,5 @@
 package com.cube.storm.content.lib.resolver;
 
-import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -21,13 +20,6 @@ import java.io.File;
  */
 public class CacheResolver extends Resolver
 {
-	private Context context;
-
-	public CacheResolver(Context context)
-	{
-		this.context = context;
-	}
-
 	@Override public Uri resolveUri(@NonNull Uri uri)
 	{
 		if ("cache".equalsIgnoreCase(uri.getScheme()))

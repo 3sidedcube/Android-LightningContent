@@ -197,7 +197,7 @@ public class ContentSettings
 
 			registerUriResolver("file", new FileResolver());
 			registerUriResolver("assets", new AssetsResolver(this.context));
-			registerUriResolver("cache", new CacheResolver(this.context));
+			registerUriResolver("cache", new CacheResolver());
 
 			storagePath(this.context.getFilesDir().getAbsolutePath());
 			fileManager(FileManager.getInstance());
