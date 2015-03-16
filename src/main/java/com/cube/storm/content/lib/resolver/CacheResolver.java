@@ -13,10 +13,14 @@ import java.io.File;
  * Resolves a `cache://file/path` Uri into its actual path, either a `assets://file/path` or
  * `file://file/path`.
  * <p/>
- * Access this class via {@link com.cube.storm.ContentSettings#getBundleBuilder()}. Do not instantiate this class directly
+ * Used when resolving a uri from Storm content (default scheme is {@code cache://}. It first checks the local cache directory
+ * found in {@link com.cube.storm.ContentSettings#storagePath} for the file, and if it does not exist, will fallback to the
+ * assets bundle path.
+ * <p/>
+ * Access this class via {@link com.cube.storm.ContentSettings#getUriResolvers()}. Do not instantiate this class directly.
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LightningContent
  */
 public class CacheResolver extends Resolver
 {
