@@ -39,6 +39,7 @@ public abstract class BundleBuilder
 	 *
 	 * @return The gson object
 	 */
+	@NonNull
 	private Gson getGson()
 	{
 		if (builder == null)
