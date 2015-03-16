@@ -6,7 +6,7 @@ import lombok.Getter;
  * Environment enum used for telling the API what environment to fetch the bundle/delta from
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LightningContent
  */
 public enum Environment
 {
