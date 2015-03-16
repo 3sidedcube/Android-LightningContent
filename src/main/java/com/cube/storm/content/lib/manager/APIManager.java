@@ -18,9 +18,24 @@ import java.util.ArrayList;
  * This is the manager class responsible for checking for and downloading updates from the server
  * <p/>
  * Access this class via {@link com.cube.storm.ContentSettings#getApiManager()}. Do not instantiate this class directly
+ * <p/>
+ * You should not need to use this class directly for checking for updates, instead, use the {@link com.cube.storm.ContentSettings#getUpdateManager()} class.
+ * <p/>
+ * Example code for checking for deltas.
+ * <pre>
+ Manifest manifest = ContentSettings.getInstance().getBundleBuilder().buildManifest(Uri.parse("cache://manifest.json"));
+ long lastUpdate = 0;
+
+ if (manifest != null)
+ {
+ 	lastUpdate = manifest.getTimestamp();
+ }
+
+ ContentSettings.getInstance().getUpdateManager().checkForUpdates(lastUpdate);
+ * </pre>
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LightningContent
  */
 public abstract class APIManager
 {

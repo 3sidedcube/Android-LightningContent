@@ -18,7 +18,7 @@ import java.io.UnsupportedEncodingException;
  * Access this class via {@link com.cube.storm.ContentSettings#getBundleBuilder()}. Do not instantiate this class directly
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LightningContent
  */
 public abstract class BundleBuilder
 {

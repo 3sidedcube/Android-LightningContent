@@ -8,10 +8,10 @@ import com.cube.storm.ContentSettings;
 import com.cube.storm.util.lib.resolver.Resolver;
 
 /**
- * Factory class used to resolve a file based on it's Uri
+ * Factory class used to resolve a file based on its Uri.
  *
  * @author Callum Taylor
- * @project StormContent
+ * @project LightningContent
  */
 public abstract class FileFactory
 {
