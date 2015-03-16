@@ -337,7 +337,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder bundleBuilder(BundleBuilder bundleBuilder)
+		public Builder bundleBuilder(@NonNull BundleBuilder bundleBuilder)
 		{
 			construct.bundleBuilder = bundleBuilder;
 			return this;
@@ -390,7 +390,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder registerUriResolver(String protocol, Resolver resolver)
+		public Builder registerUriResolver(@NonNull String protocol, @NonNull Resolver resolver)
 		{
 			construct.uriResolvers.put(protocol, resolver);
 			return this;
@@ -403,7 +403,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder registerUriResolver(Map<String, Resolver> resolvers)
+		public Builder registerUriResolver(@NonNull Map<String, Resolver> resolvers)
 		{
 			construct.uriResolvers.putAll(resolvers);
 			return this;
@@ -416,7 +416,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder fileFactory(FileFactory fileFactory)
+		public Builder fileFactory(@NonNull FileFactory fileFactory)
 		{
 			construct.fileFactory = fileFactory;
 			return this;
