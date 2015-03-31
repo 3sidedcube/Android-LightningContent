@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.cube.storm.ContentSettings;
+import com.cube.storm.content.model.StormApp;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -46,7 +48,7 @@ import lombok.Getter;
  */
 public class IdentifiersManager
 {
-	@Getter private HashMap<String, String> apps;
+	@Getter private HashMap<String, StormApp> apps;
 
 	private static IdentifiersManager instance;
 
@@ -75,7 +77,7 @@ public class IdentifiersManager
 			{
 				String identifierStr = new String(identifiersData, "UTF-8");
 				JsonObject appsObject = new JsonParser().parse(identifierStr).getAsJsonObject();
-				apps = new HashMap<String, String>();
+				apps = new HashMap<>();
 
 				for (Map.Entry<String, JsonElement> entry : appsObject.entrySet())
 				{
@@ -84,7 +86,12 @@ public class IdentifiersManager
 						String appName = entry.getKey();
 						String packageName = entry.getValue().getAsJsonObject().get("android").getAsJsonObject().get("packageName").getAsString();
 
-						apps.put(appName, packageName);
+						StormApp app = new StormApp();
+						app.setPackageName(packageName);
+						app.setAppId(appName);
+						app.setName(new Gson().fromJson(entry.getValue().getAsJsonObject().get("name"), Map.class));
+
+						apps.put(appName, app);
 					}
 					catch (Exception e)
 					{
@@ -109,6 +116,6 @@ public class IdentifiersManager
 	@Nullable
 	public String getAppPackageName(@NonNull String id)
 	{
-		return apps == null ? null : apps.get(id);
+		return apps == null ? null : apps.get(id).getPackageName();
 	}
 }
