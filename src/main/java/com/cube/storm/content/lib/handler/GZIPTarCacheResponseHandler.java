@@ -40,7 +40,7 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 
 			if (file.isDirectory())
 			{
-				File f = new File(mFilePath + "/" + file.getName());
+				new File(mFilePath + "/" + file.getName()).mkdirs();
 				continue;
 			}
 
