@@ -6,6 +6,7 @@ import net.callumtaylor.asynchttp.response.AsyncHttpResponseHandler;
 import org.xeustechnologies.jtar.TarEntry;
 import org.xeustechnologies.jtar.TarInputStream;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,9 +31,11 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 
 	@Override public void onBeginPublishedDownloadProgress(InputStream stream, ClientExecutorTask client, long totalLength) throws SocketTimeoutException, IOException
 	{
-		TarInputStream tis = new TarInputStream(new GZIPInputStream(stream, 8196));
-		TarEntry file;
+		int buffer = 8192;
 		long totalRead = 0;
+
+		TarInputStream tis = new TarInputStream(new GZIPInputStream(new BufferedInputStream(stream, buffer), buffer));
+		TarEntry file;
 
 		while ((file = tis.getNextEntry()) != null)
 		{
@@ -48,7 +51,7 @@ public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandl
 			BufferedOutputStream dest = new BufferedOutputStream(fos);
 
 			int count = 0;
-			byte data[] = new byte[8192];
+			byte data[] = new byte[buffer];
 
 			while ((count = tis.read(data)) != -1)
 			{
