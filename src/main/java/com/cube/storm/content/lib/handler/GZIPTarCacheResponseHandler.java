@@ -1,85 +1,83 @@
 package com.cube.storm.content.lib.handler;
 
-import net.callumtaylor.asynchttp.AsyncHttpClient.ClientExecutorTask;
-import net.callumtaylor.asynchttp.response.AsyncHttpResponseHandler;
+import net.callumtaylor.asynchttp.response.CacheResponseHandler;
 
-import org.xeustechnologies.jtar.TarEntry;
-import org.xeustechnologies.jtar.TarInputStream;
+import org.kamranzafar.jtar.TarEntry;
+import org.kamranzafar.jtar.TarInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketTimeoutException;
 import java.util.zip.GZIPInputStream;
+
+import lombok.Getter;
 
 /**
  * Caches the response directly to disk. Useful when downloading
  * large files. <b>note</b> This will delete any existing files
  * with the same file name
  */
-public abstract class GZIPTarCacheResponseHandler extends AsyncHttpResponseHandler
+public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 {
-	private final String mFilePath;
+	@Getter private String filePath;
 
 	public GZIPTarCacheResponseHandler(String filePath)
 	{
-		mFilePath = filePath;
+		super(filePath + "/bundle.tar");
+
+		this.filePath = filePath;
 	}
 
-	@Override public void onBeginPublishedDownloadProgress(InputStream stream, ClientExecutorTask client, long totalLength) throws SocketTimeoutException, IOException
+	@Override public void onSuccess()
 	{
-		int buffer = 8192;
-		long totalRead = 0;
-
-		TarInputStream tis = new TarInputStream(new GZIPInputStream(new BufferedInputStream(stream, buffer), buffer));
-		TarEntry file;
-
-		while ((file = tis.getNextEntry()) != null)
+		try
 		{
-			if (file.getName().equals("./")) continue;
+			int buffer = 8192;
+			long totalRead = 0;
 
-			if (file.isDirectory())
+			InputStream stream = new BufferedInputStream(new GZIPInputStream(new FileInputStream(getContent()), buffer), buffer);
+			TarInputStream tis = new TarInputStream(stream);
+			TarEntry file;
+
+			while ((file = tis.getNextEntry()) != null)
 			{
-				new File(mFilePath + "/" + file.getName()).mkdirs();
-				continue;
+				if (file.getName().equals("./")) continue;
+
+				if (file.isDirectory())
+				{
+					File f = new File(filePath + "/" + file.getName());
+					f.mkdir();
+
+					continue;
+				}
+
+ 				FileOutputStream fos = new FileOutputStream(filePath + "/" + file.getName());
+				BufferedOutputStream dest = new BufferedOutputStream(fos, buffer);
+
+				int count = 0;
+				byte data[] = new byte[buffer];
+
+				while ((count = tis.read(data)) != -1)
+				{
+					dest.write(data, 0, count);
+					totalRead += count;
+				}
+
+				dest.flush();
+				dest.close();
 			}
 
-			FileOutputStream fos = new FileOutputStream(mFilePath + "/" + file.getName());
-			BufferedOutputStream dest = new BufferedOutputStream(fos);
-
-			int count = 0;
-			byte data[] = new byte[buffer];
-
-			while ((count = tis.read(data)) != -1)
-			{
-				dest.write(data, 0, count);
-				totalRead += count;
-			}
-
-			dest.flush();
-			dest.close();
-		}
-
-		if (!client.isCancelled())
-		{
 			getConnectionInfo().responseLength = totalRead;
+			tis.close();
 		}
-
-		tis.close();
-	}
-
-	/**
-	 * Processes the response from the stream.
-	 * This is <b>not</b> ran on the UI thread
-	 *
-	 * @return The data represented as a file object
-	 */
-	@Override public String getContent()
-	{
-		return mFilePath;
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	@Override public void generateContent()

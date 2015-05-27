@@ -15,7 +15,14 @@ import com.google.gson.JsonParser;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,51 +135,64 @@ public abstract class UpdateManager
 	{
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
+			// download to temp file
+			new File(ContentSettings.getInstance().getStoragePath() + "/delta").mkdir();
+
 			AsyncHttpClient client = new AsyncHttpClient(endpoint);
-			client.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath())
+			client.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath() + "/delta")
 			{
 				@Override public void onSuccess()
 				{
+					super.onSuccess();
+
 					try
 					{
-						File contentPath = new File(getContent());
-						File manifest = new File(contentPath, Constants.FILE_MANIFEST);
+						// delete the bundle
+						new File(getFilePath() + "/bundle.tar").delete();
 
-						JsonObject manifestJson = ContentSettings.getInstance().getFileManager().readFileAsJson(manifest).getAsJsonObject();
+						File path = new File(ContentSettings.getInstance().getStoragePath());
 
-						// Create map of expected data
-						Map<String, String[]> expectedContent = new HashMap<String, String[]>();
-						expectedContent.put("pages", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_PAGES + "/").list());
-						expectedContent.put("languages", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_LANGUAGES + "/").list());
-						expectedContent.put("content", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_CONTENT + "/").list());
-						expectedContent.put("data", new File(contentPath.getAbsolutePath() + "/" + Constants.FOLDER_DATA + "/").list());
-
-						for (String key : expectedContent.keySet())
+						if (integrityCheck(getFilePath()))
 						{
-							if (manifestJson.has(key))
+							// Move files from /delta to ../
+							copyDirectory(new File(getFilePath()), new File(ContentSettings.getInstance().getStoragePath()));
+							deleteRecursive(new File(getFilePath()));
+
+							File manifest = new File(path, Constants.FILE_MANIFEST);
+							JsonObject manifestJson = ContentSettings.getInstance().getFileManager().readFileAsJson(manifest).getAsJsonObject();
+
+							// Create map of expected data
+							Map<String, String[]> expectedContent = new HashMap<String, String[]>();
+							expectedContent.put("pages", new File(path + "/" + Constants.FOLDER_PAGES + "/").list());
+							expectedContent.put("languages", new File(path + "/" + Constants.FOLDER_LANGUAGES + "/").list());
+							expectedContent.put("content", new File(path + "/" + Constants.FOLDER_CONTENT + "/").list());
+							expectedContent.put("data", new File(path + "/" + Constants.FOLDER_DATA + "/").list());
+
+							for (String key : expectedContent.keySet())
 							{
-								JsonArray pagesList = manifestJson.get(key).getAsJsonArray();
-
-								for (JsonElement e : pagesList)
+								if (manifestJson.has(key))
 								{
-									String filename = e.getAsJsonObject().get("src").getAsString();
+									JsonArray pagesList = manifestJson.get(key).getAsJsonArray();
 
-									int size = expectedContent.get(key) == null ? 0 : expectedContent.get(key).length;
-									for (int index = 0; index < size; index++)
+									for (JsonElement e : pagesList)
 									{
-										if (expectedContent.get(key)[index] != null && expectedContent.get(key)[index].equals(filename))
+										String filename = e.getAsJsonObject().get("src").getAsString();
+
+										int size = expectedContent.get(key) == null ? 0 : expectedContent.get(key).length;
+										for (int index = 0; index < size; index++)
 										{
-											expectedContent.get(key)[index] = null;
-											break;
+											if (expectedContent.get(key)[index] != null && expectedContent.get(key)[index].equals(filename))
+											{
+												expectedContent.get(key)[index] = null;
+												break;
+											}
 										}
 									}
-								}
 
-								removeFiles(contentPath.getAbsolutePath() + "/" + key + "/", expectedContent.get(key));
+									removeFiles(path + "/" + key + "/", expectedContent.get(key));
+								}
 							}
 						}
-
-						integrityCheck(contentPath);
 					}
 					catch (Exception e)
 					{
@@ -222,10 +242,14 @@ public abstract class UpdateManager
 	/**
 	 * Checks the integrity of each file currently stored in cache
 	 * <p/>
-	 * This method compares the file hash with the hash in the manifest. If the hashes do not match, the file is discarded.
+	 * This method compares the file hash with the hash in the manifest. If the hashes do not match, the bundle is discarded.
+	 *
+	 * @return true if the bundle has the correct integrity, false if it was discarded
 	 */
-	public void integrityCheck(File contentPath)
+	public boolean integrityCheck(String contentPath)
 	{
+		boolean correct = true;
+
 		JsonObject manifest = new JsonParser().parse(ContentSettings.getInstance().getFileManager().readFileAsString(new File(contentPath, Constants.FILE_MANIFEST))).getAsJsonObject();
 
 		String[] sections = {"pages", "data", "content", "languages"};
@@ -239,13 +263,76 @@ public abstract class UpdateManager
 				JsonObject page = p.getAsJsonObject();
 				String filename = page.get("src").getAsString();
 				String requiredHash = page.get("hash").getAsString();
-				String actualHash = ContentSettings.getInstance().getFileManager().getFileHash(contentPath.getAbsolutePath() + "/" + folders[index] + "/" + filename);
+				String actualHash = ContentSettings.getInstance().getFileManager().getFileHash(contentPath + "/" + folders[index] + "/" + filename);
 
 				if (actualHash != null && !requiredHash.equals(actualHash))
 				{
+					correct = false;
 					Log.w("LightningContent", String.format("File %s has the wrong hash! Expected %s but got %s", filename, requiredHash, actualHash));
+					break;
 				}
 			}
+		}
+
+		if (!correct)
+		{
+			deleteRecursive(new File(contentPath));
+		}
+
+		return correct;
+	}
+
+	private void deleteRecursive(File fileOrDirectory)
+	{
+		if (fileOrDirectory.isDirectory())
+		{
+			File[] files = fileOrDirectory.listFiles();
+
+			if (files != null)
+			{
+				for (File child : files)
+				{
+					deleteRecursive(child);
+				}
+			}
+		}
+
+		fileOrDirectory.delete();
+	}
+
+	private void copyDirectory(File sourceLocation, File targetLocation) throws IOException
+	{
+		if (sourceLocation.isDirectory())
+		{
+			if (!targetLocation.exists())
+			{
+				targetLocation.mkdir();
+			}
+
+			String[] children = sourceLocation.list();
+
+			for (String aChildren : children)
+			{
+				copyDirectory(new File(sourceLocation, aChildren), new File(targetLocation, aChildren));
+			}
+		}
+		else
+		{
+			int buffer = 8192;
+
+			InputStream in = new BufferedInputStream(new FileInputStream(sourceLocation), buffer);
+			OutputStream out = new BufferedOutputStream(new FileOutputStream(targetLocation), buffer);
+
+			byte[] buf = new byte[buffer];
+			int len;
+
+			while ((len = in.read(buf)) > 0)
+			{
+				out.write(buf, 0, len);
+			}
+
+			in.close();
+			out.close();
 		}
 	}
 }
