@@ -11,7 +11,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.UnsupportedEncodingException;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,13 +73,12 @@ public class IdentifiersManager
 	{
 		try
 		{
-			byte[] identifiersData = ContentSettings.getInstance().getFileFactory().loadFromUri(path);
+			InputStream stream = ContentSettings.getInstance().getFileFactory().loadFromUri(path);
 
-			if (identifiersData != null)
+			if (stream != null)
 			{
-				String identifierStr = new String(identifiersData, "UTF-8");
-				JsonObject appsObject = new JsonParser().parse(identifierStr).getAsJsonObject();
-				apps = new HashMap<>();
+				JsonObject appsObject = new JsonParser().parse(new InputStreamReader(new BufferedInputStream(stream, 8192))).getAsJsonObject();
+				apps = new HashMap<String, StormApp>();
 
 				for (Map.Entry<String, JsonElement> entry : appsObject.entrySet())
 				{
@@ -89,7 +90,11 @@ public class IdentifiersManager
 						StormApp app = new StormApp();
 						app.setPackageName(packageName);
 						app.setAppId(appName);
-						app.setName(new Gson().fromJson(entry.getValue().getAsJsonObject().get("name"), Map.class));
+
+						if (entry.getValue() != null && !entry.getValue().isJsonNull())
+						{
+							app.setName(new Gson().fromJson(entry.getValue().getAsJsonObject().get("name"), Map.class));
+						}
 
 						apps.put(appName, app);
 					}
@@ -100,7 +105,7 @@ public class IdentifiersManager
 				}
 			}
 		}
-		catch (UnsupportedEncodingException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}

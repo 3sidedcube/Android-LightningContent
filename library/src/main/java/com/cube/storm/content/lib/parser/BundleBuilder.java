@@ -10,6 +10,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -61,11 +64,11 @@ public abstract class BundleBuilder
 	@Nullable
 	public Manifest buildManifest(@NonNull Uri fileUri)
 	{
-		byte[] pageData = ContentSettings.getInstance().getFileFactory().loadFromUri(fileUri);
+		InputStream stream = ContentSettings.getInstance().getFileFactory().loadFromUri(fileUri);
 
-		if (pageData != null)
+		if (stream != null)
 		{
-			return buildManifest(pageData);
+			return build(stream, Manifest.class);
 		}
 
 		return null;
@@ -117,6 +120,22 @@ public abstract class BundleBuilder
 	public Manifest buildManifest(@NonNull JsonElement manifest)
 	{
 		return build(manifest, Manifest.class);
+	}
+
+	/**
+	 * Builds a class from a json string input
+	 *
+	 * @param input The json stream input to build from
+	 * @param outClass The out class type
+	 * @param <T> The type of class returned
+	 *
+	 * @return The built object, or null
+	 */
+	@Nullable
+	public <T> T build(InputStream input, Class<T> outClass)
+	{
+		Object data = getGson().fromJson(new InputStreamReader(new BufferedInputStream(input, 8192)), outClass);
+		return outClass.cast(data);
 	}
 
 	/**
