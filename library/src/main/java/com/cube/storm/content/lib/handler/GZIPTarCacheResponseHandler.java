@@ -12,6 +12,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Getter;
@@ -24,6 +26,7 @@ import lombok.Getter;
 public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 {
 	@Getter private String filePath;
+	@Getter private Set<String> extractedFiles = new HashSet<>();
 
 	public GZIPTarCacheResponseHandler(String filePath)
 	{
@@ -43,19 +46,23 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 			TarInputStream tis = new TarInputStream(stream);
 			TarEntry file;
 
+			extractedFiles.clear();
+
 			while ((file = tis.getNextEntry()) != null)
 			{
 				if (file.getName().equals("./")) continue;
 
+				String extractedFilePath = filePath + "/" + file.getName();
+
 				if (file.isDirectory())
 				{
-					File f = new File(filePath + "/" + file.getName());
+					File f = new File(extractedFilePath);
 					f.mkdir();
 
 					continue;
 				}
 
- 				FileOutputStream fos = new FileOutputStream(filePath + "/" + file.getName());
+ 				FileOutputStream fos = new FileOutputStream(extractedFilePath);
 				BufferedOutputStream dest = new BufferedOutputStream(fos, buffer);
 
 				int count = 0;
@@ -69,6 +76,7 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 
 				dest.flush();
 				dest.close();
+				extractedFiles.add(extractedFilePath);
 			}
 
 			getConnectionInfo().responseLength = totalRead;
