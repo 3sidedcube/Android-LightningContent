@@ -190,7 +190,7 @@ public class ContentSettings
 			this.context = context.getApplicationContext();
 
 			APIManager(new APIManager(){});
-			UpdateManager(new UpdateManager(){});
+			updateManager(new UpdateManager(){});
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
@@ -376,7 +376,7 @@ public class ContentSettings
 		 *
 		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
 		 */
-		public Builder UpdateManager(@NonNull UpdateManager manager)
+		public Builder updateManager(@NonNull UpdateManager manager)
 		{
 			construct.updateManager = manager;
 			return this;
