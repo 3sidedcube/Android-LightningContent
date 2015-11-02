@@ -8,6 +8,7 @@ import com.cube.storm.ContentSettings;
 import com.cube.storm.util.lib.resolver.Resolver;
 
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * Resolves a `cache://file/path` Uri into its actual path, either a `assets://file/path` or
@@ -62,7 +63,7 @@ public class CacheResolver extends Resolver
 		return null;
 	}
 
-	@Override public byte[] resolveFile(@NonNull Uri uri)
+	@Override public InputStream resolveFile(@NonNull Uri uri)
 	{
 		if ("cache".equalsIgnoreCase(uri.getScheme()))
 		{

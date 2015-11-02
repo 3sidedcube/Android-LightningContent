@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.util.lib.resolver.Resolver;
 
+import java.io.InputStream;
+
 /**
  * Factory class used to resolve a file based on its Uri.
  *
@@ -23,7 +25,7 @@ public abstract class FileFactory
 	 * @return The file byte array, nor null
 	 */
 	@Nullable
-	public byte[] loadFromUri(@NonNull Uri fileUri)
+	public InputStream loadFromUri(@NonNull Uri fileUri)
 	{
 		Resolver resolver = ContentSettings.getInstance().getUriResolvers().get(fileUri.getScheme());
 
