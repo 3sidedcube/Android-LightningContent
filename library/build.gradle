@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
 	compileSdkVersion 23
-	buildToolsVersion "23.0.2"
+	buildToolsVersion "23.0.3"
 
 	defaultConfig {
 		minSdkVersion 15
@@ -29,30 +29,21 @@ android {
 }
 
 dependencies {
-	compile 'com.android.support:support-annotations:23.1.0'
+	compile 'com.android.support:support-annotations:23.3.0'
 	compile 'org.projectlombok:lombok:1.14.8'
-	compile 'com.google.code.gson:gson:2.3'
+	compile 'com.google.code.gson:gson:2.4'
 	compile 'net.callumtaylor:asynchttpclient:1.5.1'
 	compile 'com.squareup:otto:1.3.5'
 	compile 'org.kamranzafar:jtar:2.2'
 
-	compile 'com.3sidedcube.storm:util:0.4.1-internal'
+	compile 'com.3sidedcube.storm:util:0.4.2'
 }
 
 def srcJava = 'src/main/java'
 def srcDelomboked = 'build/src-delomboked/main/java'
 
-task delombok {
-	inputs.files file(srcJava)
-	outputs.dir file(srcDelomboked)
-
-	doLast {
-		FileCollection collection = files(configurations.compile)
-		FileCollection sumTree = collection + fileTree(dir: 'bin')
-
-		ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.DelombokTask', classpath: 'libs/lombok.jar')
-		ant.delombok(from:srcJava, to:srcDelomboked, classpath: sumTree.asPath)
-	}
+task delombok(type: Exec) {
+	commandLine 'java', '-jar', 'libs/lombok.jar', 'delombok', 'src', '-d', 'build/src-delomboked'
 }
 
 def findClasses(File path)
@@ -111,4 +102,4 @@ android.libraryVariants.all { variant ->
 }
 
 //apply from: '../gradle/sonatype.gradle'
-//apply from: '../gradle/artifactory.gradle'
+apply from: '../gradle/artifactory.gradle'
