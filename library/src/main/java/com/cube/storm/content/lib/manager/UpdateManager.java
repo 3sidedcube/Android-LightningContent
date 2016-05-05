@@ -70,7 +70,7 @@ public abstract class UpdateManager
 				}
 				else if (getConnectionInfo().responseCode == 303)
 				{
-					if (getConnectionInfo().responseHeaders.containsKey("Location"))
+					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
 						downloadUpdates(location);
@@ -116,7 +116,7 @@ public abstract class UpdateManager
 				}
 				else if (getConnectionInfo().responseCode == 303)
 				{
-					if (getConnectionInfo().responseHeaders.containsKey("Location"))
+					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
 						downloadUpdates(location);
@@ -200,9 +200,9 @@ public abstract class UpdateManager
 					}
 				}
 
-				@Override public void onFinish(boolean failed)
+				@Override public void onFinish()
 				{
-					if (!failed)
+					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
