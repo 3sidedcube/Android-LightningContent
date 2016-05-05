@@ -9,10 +9,7 @@ import com.cube.storm.content.lib.Environment;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
-
-import java.util.ArrayList;
+import okhttp3.Headers;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -64,7 +61,7 @@ public abstract class APIManager
 
 		String urlPart = String.format(Constants.API_CONTENT_UPDATE, appId, lastUpdate, ContentSettings.getInstance().getContentEnvironment().getEnvironmentLabel());
 
-		ArrayList<Header> headers = new ArrayList<Header>();
+		Headers.Builder builder = new Headers.Builder();
 
 		if (ContentSettings.getInstance().getContentEnvironment() == Environment.TEST)
 		{
@@ -73,12 +70,12 @@ public abstract class APIManager
 				throw new Error("Authorization token is empty, you must set this in ContentSettings$Builder.authorizationToken(String)");
 			}
 
-			headers.add(new BasicHeader("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken()));
+			builder.add("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken());
 		}
 
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
 		client.setAllowRedirect(false);
-		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, headers, response);
+		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, builder.build(), response);
 	}
 
 	/**
@@ -124,7 +121,7 @@ public abstract class APIManager
 			urlPart += "&timestamp=" + lastUpdate;
 		}
 
-		ArrayList<Header> headers = new ArrayList<Header>();
+		Headers.Builder builder = new Headers.Builder();
 
 		if (ContentSettings.getInstance().getContentEnvironment() == Environment.TEST)
 		{
@@ -133,11 +130,11 @@ public abstract class APIManager
 				throw new Error("Authorization token is empty, you must set this in ContentSettings$Builder.authorizationToken(String)");
 			}
 
-			headers.add(new BasicHeader("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken()));
+			builder.add("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken());
 		}
 
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
 		client.setAllowRedirect(false);
-		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, headers, response);
+		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, builder.build(), response);
 	}
 }
