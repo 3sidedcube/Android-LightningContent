@@ -14,4 +14,10 @@ public interface UpdateListener
 	 * Method called when an update has been successfully downloaded and extracted
 	 */
 	public void onUpdateDownloaded();
+
+	/**
+	 * Called when the content check has been made
+	 * @param hasUpdates If there are updates to download or not
+	 */
+	public void onUpdateCheckFinished(boolean hasUpdates);
 }
