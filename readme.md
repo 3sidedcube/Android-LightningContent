@@ -8,7 +8,7 @@ This module's purpose is to load pre-packed bundles from disk and deal with cont
 
 ##Gradle
 
-Simply include the following for your gradle dependencies `com.3sidedcube.storm:content:0.1a`.
+Simply include the following for your gradle dependencies `com.3sidedcube.storm:content:0.5`.
 
 **Note** The versioning of the library will always be as follows:
 
