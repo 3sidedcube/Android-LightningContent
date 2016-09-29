@@ -141,6 +141,16 @@ public abstract class UpdateManager
 			AsyncHttpClient client = new AsyncHttpClient(endpoint);
 			client.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath() + "/delta")
 			{
+				@Override public void onByteChunkReceivedProcessed(long totalProcessed, long totalLength)
+				{
+					super.onByteChunkReceivedProcessed(totalProcessed, totalLength);
+
+					if (ContentSettings.getInstance().getDownloadListener() != null)
+					{
+						ContentSettings.getInstance().getDownloadListener().onDownloadProgress(totalProcessed, totalLength);
+					}
+				}
+
 				@Override public void onSuccess()
 				{
 					super.onSuccess();
@@ -332,6 +342,7 @@ public abstract class UpdateManager
 			}
 
 			in.close();
+			out.flush();
 			out.close();
 		}
 	}
