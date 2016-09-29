@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.factory.FileFactory;
+import com.cube.storm.content.lib.listener.DownloadListener;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.manager.APIManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
@@ -135,6 +136,11 @@ public class ContentSettings
 	 * Listener instance for updates downloaded
 	 */
 	@Getter @Setter private UpdateListener updateListener;
+
+	/**
+	 * Listener instance for updates being downloaded
+	 */
+	@Getter @Setter @Nullable private DownloadListener downloadListener;
 
 	/**
 	 * The gson builder class used to build classes such as manifest
