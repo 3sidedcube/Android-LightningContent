@@ -86,6 +86,14 @@ public abstract class UpdateManager
 					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFinished(toDownload);
 				}
 			}
+
+			@Override public void onFailure()
+			{
+				if (ContentSettings.getInstance().getUpdateListener() != null)
+				{
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
+				}
+			}
 		});
 	}
 
@@ -139,6 +147,14 @@ public abstract class UpdateManager
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
 					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFinished(toDownload);
+				}
+			}
+
+			@Override public void onFailure()
+			{
+				if (ContentSettings.getInstance().getUpdateListener() != null)
+				{
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
 				}
 			}
 		});
