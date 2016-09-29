@@ -45,6 +45,8 @@ public abstract class UpdateManager
 		{
 			@Override public void onSuccess()
 			{
+				boolean toDownload = false;
+
 				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
 				{
 					try
@@ -59,6 +61,7 @@ public abstract class UpdateManager
 								{
 									String endpoint = response.getAsJsonObject().get("file").getAsString();
 									downloadUpdates(endpoint);
+									toDownload = true;
 								}
 							}
 						}
@@ -74,7 +77,13 @@ public abstract class UpdateManager
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
 						downloadUpdates(location);
+						toDownload = true;
 					}
+				}
+
+				if (ContentSettings.getInstance().getUpdateListener() != null)
+				{
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFinished(toDownload);
 				}
 			}
 		});
@@ -91,6 +100,8 @@ public abstract class UpdateManager
 		{
 			@Override public void onSuccess()
 			{
+				boolean toDownload = false;
+
 				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
 				{
 					try
@@ -105,6 +116,7 @@ public abstract class UpdateManager
 								{
 									String endpoint = response.getAsJsonObject().get("file").getAsString();
 									downloadUpdates(endpoint);
+									toDownload = true;
 								}
 							}
 						}
@@ -120,7 +132,13 @@ public abstract class UpdateManager
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
 						downloadUpdates(location);
+						toDownload = true;
 					}
+				}
+
+				if (ContentSettings.getInstance().getUpdateListener() != null)
+				{
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFinished(toDownload);
 				}
 			}
 		});
