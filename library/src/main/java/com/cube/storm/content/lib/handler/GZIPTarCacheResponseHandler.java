@@ -53,13 +53,19 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 				if (file.getName().equals("./")) continue;
 
 				String extractedFilePath = filePath + "/" + file.getName();
+				File extractFile = new File(extractedFilePath);
 
 				if (file.isDirectory())
 				{
-					File f = new File(extractedFilePath);
-					f.mkdir();
+					extractFile.mkdirs();
 
 					continue;
+				}
+
+				// create folders if they do not exist for file
+				if (!new File(extractFile.getParent()).exists())
+				{
+					new File(extractFile.getParent()).mkdirs();
 				}
 
  				FileOutputStream fos = new FileOutputStream(extractedFilePath);
