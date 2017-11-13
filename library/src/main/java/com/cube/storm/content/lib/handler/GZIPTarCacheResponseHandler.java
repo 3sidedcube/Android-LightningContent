@@ -91,6 +91,7 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 		catch (IOException e)
 		{
 			e.printStackTrace();
+			onFailure();
 		}
 	}
 

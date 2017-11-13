@@ -249,6 +249,14 @@ public abstract class UpdateManager
 					}
 				}
 
+				@Override public void onFailure()
+				{
+					if (ContentSettings.getInstance().getUpdateListener() != null)
+					{
+						ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
+					}
+				}
+
 				@Override public void onFinish()
 				{
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
