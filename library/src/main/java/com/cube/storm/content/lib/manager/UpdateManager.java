@@ -241,6 +241,11 @@ public abstract class UpdateManager
 					catch (Exception e)
 					{
 						e.printStackTrace();
+
+						if (ContentSettings.getInstance().getUpdateListener() != null)
+						{
+							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
+						}
 					}
 				}
 
@@ -251,6 +256,13 @@ public abstract class UpdateManager
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
+						}
+					}
+					else
+					{
+						if (ContentSettings.getInstance().getUpdateListener() != null)
+						{
+							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(0, getConnectionInfo());
 						}
 					}
 				}
