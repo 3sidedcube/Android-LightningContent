@@ -36,15 +36,19 @@ import java.util.Map;
  */
 public abstract class UpdateManager
 {
+	private AsyncHttpClient apiClient;
+
 	/**
 	 * Downloads the latest full bundle from the server
 	 */
 	public void checkForBundle()
 	{
-		ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
+		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
 			{
+				apiClient = null;
+
 				boolean toDownload = false;
 
 				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
@@ -104,10 +108,12 @@ public abstract class UpdateManager
 	 */
 	public void checkForUpdates(long lastUpdate)
 	{
-		ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
+		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
 			{
+				apiClient = null;
+
 				boolean toDownload = false;
 
 				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
@@ -172,8 +178,8 @@ public abstract class UpdateManager
 			// download to temp file
 			new File(ContentSettings.getInstance().getStoragePath() + "/delta").mkdir();
 
-			AsyncHttpClient client = new AsyncHttpClient(endpoint);
-			client.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath() + "/delta")
+			apiClient = new AsyncHttpClient(endpoint);
+			apiClient.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath() + "/delta")
 			{
 				@Override public void onByteChunkReceivedProcessed(long totalProcessed, long totalLength)
 				{
@@ -259,6 +265,8 @@ public abstract class UpdateManager
 
 				@Override public void onFinish()
 				{
+					apiClient = null;
+
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
 						if (ContentSettings.getInstance().getUpdateListener() != null)
@@ -275,6 +283,17 @@ public abstract class UpdateManager
 					}
 				}
 			});
+		}
+	}
+
+	/**
+	 * Cancels any pending api requests
+	 */
+	public void cancelPendingRequests()
+	{
+		if (apiClient != null)
+		{
+			apiClient.cancel();
 		}
 	}
 
