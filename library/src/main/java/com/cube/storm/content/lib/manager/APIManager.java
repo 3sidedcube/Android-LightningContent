@@ -45,7 +45,7 @@ public abstract class APIManager
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 * @param response The response to use for downloading the delta
 	 */
-	public void checkForDelta(long lastUpdate, JsonResponseHandler response)
+	public AsyncHttpClient checkForDelta(long lastUpdate, JsonResponseHandler response)
 	{
 		String appId = "";
 
@@ -76,6 +76,8 @@ public abstract class APIManager
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
 		client.setAllowRedirect(false);
 		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, builder.build(), response);
+
+		return client;
 	}
 
 	/**
@@ -86,9 +88,9 @@ public abstract class APIManager
 	 *
 	 * @param response The response to use for downloading the bundle
 	 */
-	public void checkForBundle(JsonResponseHandler response)
+	public AsyncHttpClient checkForBundle(JsonResponseHandler response)
 	{
-		checkForBundle(-1, response);
+		return checkForBundle(-1, response);
 	}
 
 	/**
@@ -100,7 +102,7 @@ public abstract class APIManager
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 * @param response The response to use for downloading the bundle
 	 */
-	public void checkForBundle(long lastUpdate, JsonResponseHandler response)
+	public AsyncHttpClient checkForBundle(long lastUpdate, JsonResponseHandler response)
 	{
 		String appId = "";
 
@@ -136,5 +138,7 @@ public abstract class APIManager
 		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
 		client.setAllowRedirect(false);
 		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, builder.build(), response);
+
+		return client;
 	}
 }
