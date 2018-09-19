@@ -28,7 +28,7 @@ public class ExampleActivity extends Activity
 	private void exampleDebug()
 	{
 		// Dump an array
-		Debug.out(new String[]
+		Debug.out((Object[])new String[]
 		{
 			"First output",
 			"Second output",
