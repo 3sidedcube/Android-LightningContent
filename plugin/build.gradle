@@ -1,0 +1,32 @@
+buildscript {
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:3.4.3'
+        classpath 'org.apache.httpcomponents:httpclient:4.5.5'
+    }
+}
+
+plugins {
+    id 'groovy'
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'de.undercouch:gradle-download-task:3.4.3'
+    compile 'org.apache.httpcomponents:httpclient:4.5.5'
+    testCompile 'junit:junit:4.12'
+}
+
+POM_NAME='LightningContentGradlePlugin'
+POM_ARTIFACT_ID='content-gradle-plugin'
+POM_PACKAGING='jar'
+VERSION_NAME="1.0.5-SNAPSHOT"
+
+apply from: '../gradle/artifactory.gradle'
