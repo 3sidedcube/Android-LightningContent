@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.DownloadListener;
@@ -17,12 +16,11 @@ import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.AssetsResolver;
 import com.cube.storm.util.lib.resolver.FileResolver;
 import com.cube.storm.util.lib.resolver.Resolver;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
@@ -80,11 +78,6 @@ public class ContentSettings
 
 		return instance;
 	}
-
-	/**
-	 * Default private constructor
-	 */
-	private ContentSettings(){}
 
 	/**
 	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
