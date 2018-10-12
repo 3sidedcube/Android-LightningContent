@@ -100,14 +100,4 @@ afterEvaluate { project ->
 		required { gradle.taskGraph.hasTask("uploadArchives") }
 		sign configurations.archives
 	}
-
-	task androidSourcesJar(type: Jar) {
-		classifier = 'sources'
-		baseName = POM_ARTIFACT_ID
-		from android.sourceSets.main.java.srcDirs
-	}
-
-	artifacts {
-		archives androidSourcesJar
-	}
 }
