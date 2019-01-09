@@ -126,6 +126,7 @@ class StormPlugin implements Plugin<Project> {
 					}
 					src mergedStormConfig.url
 					dest archiveDownloadLocation
+					requestInterceptor new RedirectInterceptor()
 					overwrite true
 				}
 				def unpackTask = project.task("stormUnpack${variant.name.capitalize()}Bundle", type: Copy, dependsOn: downloadTask) {
