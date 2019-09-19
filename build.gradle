@@ -2,8 +2,8 @@
 
 buildscript {
 	repositories {
-		jcenter()
 		google()
+		jcenter()
 	}
 	dependencies {
 		classpath 'com.android.tools.build:gradle:3.1.4'
@@ -22,8 +22,8 @@ ext {
 
 allprojects {
 	repositories {
-		jcenter()
 		google()
+		jcenter()
 
 		maven {
 			url 'http://oss.3sidedcube.com:8081/artifactory/internal'
