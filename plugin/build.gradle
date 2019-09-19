@@ -21,6 +21,6 @@ dependencies {
 POM_NAME='LightningContentGradlePlugin'
 POM_ARTIFACT_ID='content-gradle-plugin'
 POM_PACKAGING='jar'
-VERSION_NAME="1.0.2"
+VERSION_NAME="1.0.3"
 
 apply from: '../gradle/artifactory.gradle'
