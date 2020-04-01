@@ -6,8 +6,6 @@ import android.os.Bundle;
 import com.cube.storm.util.lib.debug.Debug;
 import com.cube.storm.util.lib.manager.FileManager;
 
-import junit.framework.Assert;
-
 /**
  * @author Callum Taylor
  * @project LightningUtil
@@ -46,8 +44,6 @@ public class ExampleActivity extends Activity
 		if (FileManager.getInstance().fileExists(file))
 		{
 			String read = FileManager.getInstance().readFileAsString(file);
-
-			Assert.assertNotNull(read);
 		}
 		else
 		{

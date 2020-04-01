@@ -3,7 +3,14 @@
 	package="com.cube.storm.ui.example"
 >
 	<application
-		android:allowBackup="true"
+		android:allowBackup="false"
 	>
+		<activity android:name=".ExampleActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+
 	</application>
 </manifest>
