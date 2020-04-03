@@ -1,12 +1,12 @@
 package com.cube.storm.content.lib.task;
 
 import android.content.Context;
-import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import com.cube.storm.ContentSettings;
-import com.cube.storm.content.model.Manifest;
+
+import java.util.concurrent.TimeUnit;
 
 public class ContentUpdateWorker extends Worker
 {
@@ -22,17 +22,23 @@ public class ContentUpdateWorker extends Worker
 	@Override
 	public Result doWork()
 	{
-		Uri manifestUri = Uri.parse("cache://manifest.json");
-		Manifest manifest = ContentSettings.getInstance().getBundleBuilder().buildManifest(manifestUri);
+		try
+		{
+			boolean isCompleted = ContentSettings.getInstance()
+			                                     .getUpdateManager()
+			                                     .checkForUpdates()
+			                                     .blockingAwait(9L, TimeUnit.MINUTES);
 
-		if (manifest == null)
+			if (!isCompleted)
+			{
+				return Result.retry();
+			}
+
+			return Result.success();
+		}
+		catch (Exception ex)
 		{
 			return Result.failure();
 		}
-
-		long lastUpdate = manifest.getTimestamp();
-		ContentSettings.getInstance().getUpdateManager().checkForUpdates(lastUpdate);
-
-		return null;
 	}
 }

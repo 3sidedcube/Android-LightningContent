@@ -1,17 +1,20 @@
 package com.cube.storm.content.lib.manager;
 
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
-
+import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
+import com.cube.storm.content.model.Manifest;
 import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.CompletableEmitter;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
@@ -41,7 +44,12 @@ public abstract class UpdateManager
 	/**
 	 * Downloads the latest full bundle from the server
 	 */
-	public void checkForBundle()
+	public Completable checkForBundle()
+	{
+		return Completable.create(this::checkForBundle);
+	}
+
+	private void checkForBundle(CompletableEmitter completableEmitter)
 	{
 		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
 		{
@@ -64,7 +72,7 @@ public abstract class UpdateManager
 								if (response.getAsJsonObject().has("file"))
 								{
 									String endpoint = response.getAsJsonObject().get("file").getAsString();
-									downloadUpdates(endpoint);
+									downloadUpdates(endpoint, completableEmitter);
 									toDownload = true;
 								}
 							}
@@ -80,7 +88,7 @@ public abstract class UpdateManager
 					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
-						downloadUpdates(location);
+						downloadUpdates(location, completableEmitter);
 						toDownload = true;
 					}
 				}
@@ -101,12 +109,31 @@ public abstract class UpdateManager
 		});
 	}
 
+	public Completable checkForUpdates()
+	{
+		Long bundleTimestamp = readManifestTimestamp();
+
+		if (bundleTimestamp == null)
+		{
+			return checkForBundle();
+		}
+		else
+		{
+			return checkForUpdates(bundleTimestamp);
+		}
+	}
+
 	/**
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */
-	public void checkForUpdates(long lastUpdate)
+	public Completable checkForUpdates(final long lastUpdate)
+	{
+		return Completable.create(emitter -> checkForUpdates(lastUpdate, emitter));
+	}
+
+	private void checkForUpdates(long lastUpdate, CompletableEmitter completableEmitter)
 	{
 		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
@@ -129,7 +156,7 @@ public abstract class UpdateManager
 								if (response.getAsJsonObject().has("file"))
 								{
 									String endpoint = response.getAsJsonObject().get("file").getAsString();
-									downloadUpdates(endpoint);
+									downloadUpdates(endpoint, completableEmitter);
 									toDownload = true;
 								}
 							}
@@ -145,7 +172,7 @@ public abstract class UpdateManager
 					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
-						downloadUpdates(location);
+						downloadUpdates(location, completableEmitter);
 						toDownload = true;
 					}
 				}
@@ -158,6 +185,7 @@ public abstract class UpdateManager
 
 			@Override public void onFailure()
 			{
+				completableEmitter.onError(new IllegalStateException("Failure while checking for bundle update"));
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
 					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
@@ -171,7 +199,7 @@ public abstract class UpdateManager
 	 *
 	 * @param endpoint The endpoint to the tar.gz bundle/delta file
 	 */
-	public void downloadUpdates(String endpoint)
+	public void downloadUpdates(String endpoint, CompletableEmitter completableEmitter)
 	{
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
@@ -248,6 +276,7 @@ public abstract class UpdateManager
 					{
 						e.printStackTrace();
 
+						completableEmitter.onError(e);
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
@@ -257,6 +286,7 @@ public abstract class UpdateManager
 
 				@Override public void onFailure()
 				{
+					completableEmitter.onError(new IllegalStateException("Failed to download bundle"));
 					if (ContentSettings.getInstance().getUpdateListener() != null)
 					{
 						ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
@@ -269,6 +299,7 @@ public abstract class UpdateManager
 
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
+						completableEmitter.onComplete();
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
@@ -276,6 +307,7 @@ public abstract class UpdateManager
 					}
 					else
 					{
+						completableEmitter.onError(new IllegalStateException("Unexpected response when downloading bundle: " + getConnectionInfo().responseCode));
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(0, getConnectionInfo());
@@ -295,6 +327,20 @@ public abstract class UpdateManager
 		{
 			apiClient.cancel();
 		}
+	}
+
+	@Nullable
+	public Long readManifestTimestamp()
+	{
+		Uri manifestUri = Uri.parse("cache://manifest.json");
+		Manifest manifest = ContentSettings.getInstance().getBundleBuilder().buildManifest(manifestUri);
+
+		if (manifest == null)
+		{
+			return null;
+		}
+
+		return manifest.getTimestamp();
 	}
 
 	/**
