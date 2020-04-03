@@ -9,7 +9,7 @@ import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.DownloadListener;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.manager.APIManager;
-import com.cube.storm.content.lib.manager.LegacyUpdateManager;
+import com.cube.storm.content.lib.manager.DefaultUpdateManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
 import com.cube.storm.content.lib.resolver.CacheResolver;
@@ -190,7 +190,7 @@ public class ContentSettings
 			this.context = context.getApplicationContext();
 
 			APIManager(new APIManager(){});
-			updateManager(new LegacyUpdateManager());
+			updateManager(new DefaultUpdateManager());
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});

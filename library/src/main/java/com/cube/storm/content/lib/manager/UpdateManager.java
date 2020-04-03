@@ -10,11 +10,15 @@ import io.reactivex.rxjava3.core.Completable;
  */
 public interface UpdateManager
 {
+	void cancelPendingRequests();
+
 	/**
 	 * Downloads the latest full bundle from the server.
 	 * <p>
 	 * Ignores the timestamp in the local manifest file, so the downloaded bundle may be incompatible with the binary
 	 * if for example a landmark publish has occurred
+	 * <p>
+	 * Despite the name this method will also download updates, not just check for them.
 	 */
 	Completable checkForBundle();
 
@@ -22,6 +26,8 @@ public interface UpdateManager
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
 	 * <p>
 	 * Reads the timestamp from which to check for updates from the local manifest file
+	 * <p>
+	 * Despite the name this method will also download updates, not just check for them.
 	 */
 	default Completable checkForUpdates()
 	{
@@ -38,6 +44,8 @@ public interface UpdateManager
 
 	/**
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
+	 * <p>
+	 * Despite the name this method will also download updates, not just check for them.
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */

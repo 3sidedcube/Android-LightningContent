@@ -30,14 +30,11 @@ import java.util.Map;
  * This is the manager class responsible for checking for and downloading updates from the server
  * <p/>
  * Access this class via {@link ContentSettings#getUpdateManager()}. Do not instantiate this class directly
- * <p />
- * This implementation was the default UpdateManager implementation before v2.x of the content library. It was replaced
- * by {@link BackgroundWorkerUpdateManager}.
  *
  * @author Callum Taylor
  * @project LightningContent
  */
-public class LegacyUpdateManager implements UpdateManager
+public class DefaultUpdateManager implements UpdateManager
 {
 	private AsyncHttpClient apiClient;
 
@@ -309,6 +306,7 @@ public class LegacyUpdateManager implements UpdateManager
 	/**
 	 * Cancels any pending api requests
 	 */
+	@Override
 	public void cancelPendingRequests()
 	{
 		if (apiClient != null)
