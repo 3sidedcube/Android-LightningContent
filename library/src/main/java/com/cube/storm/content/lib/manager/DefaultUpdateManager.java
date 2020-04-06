@@ -5,13 +5,17 @@ import android.util.Log;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
+import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.CompletableEmitter;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
@@ -38,17 +42,23 @@ public class DefaultUpdateManager implements UpdateManager
 {
 	private AsyncHttpClient apiClient;
 
+	private Subject<Observable<UpdateContentProgress>> updates = PublishSubject.create();
+
 	/**
 	 * Downloads the latest full bundle from the server
 	 */
 	@Override
-	public Completable checkForBundle()
+	public Observable<UpdateContentProgress> checkForBundle()
 	{
-		return Completable.create(this::checkForBundle);
+		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
+		updates.onNext(observer);
+		checkForBundle(observer);
+		return observer;
 	}
 
-	private void checkForBundle(CompletableEmitter completableEmitter)
+	private void checkForBundle(Observer<UpdateContentProgress> observer)
 	{
+		observer.onNext(UpdateContentProgress.checkingForBundle());
 		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
@@ -70,7 +80,7 @@ public class DefaultUpdateManager implements UpdateManager
 								if (response.getAsJsonObject().has("file"))
 								{
 									String endpoint = response.getAsJsonObject().get("file").getAsString();
-									downloadUpdates(endpoint, completableEmitter);
+									downloadUpdates(endpoint, observer);
 									toDownload = true;
 								}
 							}
@@ -86,9 +96,14 @@ public class DefaultUpdateManager implements UpdateManager
 					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
-						downloadUpdates(location, completableEmitter);
+						downloadUpdates(location, observer);
 						toDownload = true;
 					}
+				}
+
+				if (!toDownload)
+				{
+					observer.onComplete();
 				}
 
 				if (ContentSettings.getInstance().getUpdateListener() != null)
@@ -99,6 +114,8 @@ public class DefaultUpdateManager implements UpdateManager
 
 			@Override public void onFailure()
 			{
+				observer.onError(new IOException("Unexpected response when checking for bundle: " + getConnectionInfo().toString()));
+
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
 					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
@@ -113,13 +130,17 @@ public class DefaultUpdateManager implements UpdateManager
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */
 	@Override
-	public Completable checkForUpdates(final long lastUpdate)
+	public Observable<UpdateContentProgress> checkForUpdates(final long lastUpdate)
 	{
-		return Completable.create(emitter -> checkForUpdates(lastUpdate, emitter));
+		Subject<UpdateContentProgress> subject = BehaviorSubject.create();
+		updates.onNext(subject);
+		checkForUpdates(lastUpdate, subject);
+		return subject;
 	}
 
-	private void checkForUpdates(long lastUpdate, CompletableEmitter completableEmitter)
+	private void checkForUpdates(long lastUpdate, Observer<UpdateContentProgress> observer)
 	{
+		observer.onNext(UpdateContentProgress.checkingForDelta());
 		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
@@ -141,7 +162,7 @@ public class DefaultUpdateManager implements UpdateManager
 								if (response.getAsJsonObject().has("file"))
 								{
 									String endpoint = response.getAsJsonObject().get("file").getAsString();
-									downloadUpdates(endpoint, completableEmitter);
+									downloadUpdates(endpoint, observer);
 									toDownload = true;
 								}
 							}
@@ -157,7 +178,7 @@ public class DefaultUpdateManager implements UpdateManager
 					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
 					{
 						String location = getConnectionInfo().responseHeaders.get("Location");
-						downloadUpdates(location, completableEmitter);
+						downloadUpdates(location, observer);
 						toDownload = true;
 					}
 				}
@@ -170,7 +191,7 @@ public class DefaultUpdateManager implements UpdateManager
 
 			@Override public void onFailure()
 			{
-				completableEmitter.onError(new IllegalStateException("Failure while checking for bundle update"));
+				observer.onError(new IllegalStateException("Unexpected response when checking for delta update: " + getConnectionInfo().toString()));
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
 					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
@@ -184,8 +205,10 @@ public class DefaultUpdateManager implements UpdateManager
 	 *
 	 * @param endpoint The endpoint to the tar.gz bundle/delta file
 	 */
-	public void downloadUpdates(String endpoint, CompletableEmitter completableEmitter)
+	public void downloadUpdates(String endpoint, Observer<UpdateContentProgress> observer)
 	{
+		observer.onNext(UpdateContentProgress.downloading(0, 0));
+
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
 			// download to temp file
@@ -198,6 +221,7 @@ public class DefaultUpdateManager implements UpdateManager
 				{
 					super.onByteChunkReceivedProcessed(totalProcessed, totalLength);
 
+					observer.onNext(UpdateContentProgress.downloading(totalProcessed, totalLength));
 					if (ContentSettings.getInstance().getDownloadListener() != null)
 					{
 						ContentSettings.getInstance().getDownloadListener().onDownloadProgress(totalProcessed, totalLength);
@@ -261,7 +285,7 @@ public class DefaultUpdateManager implements UpdateManager
 					{
 						e.printStackTrace();
 
-						completableEmitter.onError(e);
+						observer.onError(e);
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
@@ -271,7 +295,7 @@ public class DefaultUpdateManager implements UpdateManager
 
 				@Override public void onFailure()
 				{
-					completableEmitter.onError(new IllegalStateException("Failed to download bundle"));
+					observer.onError(new IllegalStateException("Failed to download bundle"));
 					if (ContentSettings.getInstance().getUpdateListener() != null)
 					{
 						ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
@@ -284,7 +308,7 @@ public class DefaultUpdateManager implements UpdateManager
 
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
-						completableEmitter.onComplete();
+						observer.onComplete();
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
@@ -292,7 +316,7 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					else
 					{
-						completableEmitter.onError(new IllegalStateException("Unexpected response when downloading bundle: " + getConnectionInfo().responseCode));
+						observer.onError(new IllegalStateException("Unexpected response when downloading bundle: " + getConnectionInfo().toString()));
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(0, getConnectionInfo());
@@ -313,6 +337,18 @@ public class DefaultUpdateManager implements UpdateManager
 		{
 			apiClient.cancel();
 		}
+	}
+
+	@Override
+	public void scheduleBackgroundUpdates()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Observable<Observable<UpdateContentProgress>> updates()
+	{
+		return updates;
 	}
 
 	/**

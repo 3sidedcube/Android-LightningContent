@@ -1,7 +1,8 @@
 package com.cube.storm.content.lib.manager;
 
 import com.cube.storm.content.lib.helper.BundleHelper;
-import io.reactivex.rxjava3.core.Completable;
+import com.cube.storm.content.model.UpdateContentProgress;
+import io.reactivex.Observable;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -20,7 +21,7 @@ public interface UpdateManager
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	Completable checkForBundle();
+	Observable<UpdateContentProgress> checkForBundle();
 
 	/**
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
@@ -29,12 +30,12 @@ public interface UpdateManager
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	default Completable checkForUpdates()
+	default Observable<UpdateContentProgress> checkForUpdates()
 	{
 		Long bundleTimestamp = BundleHelper.readContentTimestamp();
 		if (bundleTimestamp == null)
 		{
-			return Completable.error(new IllegalStateException("Cannot check for updates without timestamp"));
+			return Observable.error(new IllegalStateException("Cannot check for updates without timestamp"));
 		}
 		else
 		{
@@ -49,5 +50,15 @@ public interface UpdateManager
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */
-	Completable checkForUpdates(final long lastUpdate);
+	Observable<UpdateContentProgress> checkForUpdates(final long lastUpdate);
+
+	/**
+	 * Schedules background content updates that should run even if the app is closed.
+	 */
+	void scheduleBackgroundUpdates();
+
+	/**
+	 * Returns an observable which emits further observables representing content updates.
+	 */
+	Observable<Observable<UpdateContentProgress>> updates();
 }
