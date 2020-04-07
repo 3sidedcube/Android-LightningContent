@@ -33,6 +33,7 @@ public interface UpdateManager
 	default Observable<UpdateContentProgress> checkForUpdates()
 	{
 		Long bundleTimestamp = BundleHelper.readContentTimestamp();
+
 		if (bundleTimestamp == null)
 		{
 			return Observable.error(new IllegalStateException("Cannot check for updates without timestamp"));
@@ -53,7 +54,7 @@ public interface UpdateManager
 	Observable<UpdateContentProgress> checkForUpdates(final long lastUpdate);
 
 	/**
-	 * Schedules background content updates that should run even if the app is closed.
+	 * Schedules periodic background content updates that should run even if the app is closed.
 	 */
 	void scheduleBackgroundUpdates();
 
