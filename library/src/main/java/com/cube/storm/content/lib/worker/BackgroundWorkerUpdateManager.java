@@ -18,8 +18,6 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
-import java.util.List;
-
 import static java.util.concurrent.TimeUnit.HOURS;
 
 /**
@@ -66,8 +64,6 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	private static final String CONTENT_CHECK_WORK_NAME = "storm_content_check";
 	private static final String CONTENT_CHECK_SCHEDULE_NAME = "storm_content_check_schedule";
 	private static final Constraints CONTENT_CHECK_WORK_CONSTRAINTS = createWorkConstraints();
-	private static final OneTimeWorkRequest CONTENT_CHECK_WORK_REQUEST = createOneTimeWorkRequest();
-	private static final PeriodicWorkRequest CONTENT_CHECK_SCHEDULE_REQUEST = createPeriodicWorkRequest();
 
 	private WorkManager workManager;
 
@@ -91,24 +87,24 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@Override
 	public Observable<UpdateContentProgress> checkForUpdates(long lastUpdate)
 	{
-		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.KEEP, CONTENT_CHECK_WORK_REQUEST);
+		// TODO: Incorporate lastUpdate
+		OneTimeWorkRequest workRequest = createOneTimeWorkRequest();
+		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.APPEND, workRequest);
 
-		LiveData<List<WorkInfo>> workLiveData =
-			workManager.getWorkInfosForUniqueWorkLiveData(BackgroundWorkerUpdateManager.CONTENT_CHECK_WORK_NAME);
-		BackgroundWorkerObserver workLiveDataObserver = new BackgroundWorkerObserver(workLiveData);
-
+		LiveData<WorkInfo> workInfoLiveData = workManager.getWorkInfoByIdLiveData(workRequest.getId());
+		BackgroundWorkerObserver workLiveDataObserver = new BackgroundWorkerObserver(workInfoLiveData);
 		updates.onNext(workLiveDataObserver.getSubject());
-		workLiveData.observeForever(workLiveDataObserver);
-
+		workInfoLiveData.observeForever(workLiveDataObserver);
 		return workLiveDataObserver.getSubject();
 	}
 
 	@Override
 	public void scheduleBackgroundUpdates()
 	{
+		PeriodicWorkRequest workRequest = createPeriodicWorkRequest();
 		workManager.enqueueUniquePeriodicWork(CONTENT_CHECK_SCHEDULE_NAME,
 		                                      ExistingPeriodicWorkPolicy.KEEP,
-		                                      CONTENT_CHECK_SCHEDULE_REQUEST);
+		                                      workRequest);
 	}
 
 	@Override
