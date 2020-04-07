@@ -13,6 +13,7 @@ import com.cube.storm.content.lib.manager.DefaultMigrationManager;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
 import com.cube.storm.content.lib.manager.MigrationManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
+import com.cube.storm.content.lib.manager.WifiOnlyUpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
@@ -197,8 +198,8 @@ public class ContentSettings
 			this.context = context.getApplicationContext();
 
 			APIManager(new APIManager(){});
-			updateManager(new DefaultUpdateManager());
 			migrationManager(new DefaultMigrationManager());
+			updateManager(new WifiOnlyUpdateManager(this.context, new DefaultUpdateManager()));
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
