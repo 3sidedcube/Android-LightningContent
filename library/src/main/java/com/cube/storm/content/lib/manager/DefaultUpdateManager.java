@@ -175,6 +175,11 @@ public class DefaultUpdateManager implements UpdateManager
 						toDownload = true;
 					}
 				}
+				
+				if (!toDownload)
+				{
+					observer.onComplete();
+				}
 
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
