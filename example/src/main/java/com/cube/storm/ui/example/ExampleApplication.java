@@ -5,6 +5,7 @@ import android.util.Log;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.listener.UpdateListener;
+import com.cube.storm.content.lib.worker.BackgroundWorkerUpdateManager;
 
 public class ExampleApplication extends Application
 {
@@ -18,6 +19,7 @@ public class ExampleApplication extends Application
 			.contentBaseUrl(BuildConfig.STORM_API_BASE + "/")
 			.contentVersion(BuildConfig.STORM_API_VERSION)
 			.contentEnvironment(Environment.LIVE)
+			.updateManager(new BackgroundWorkerUpdateManager(this))
 			.updateListener(new UpdateListener()
 			{
 				@Override public void onUpdateDownloaded()
@@ -26,5 +28,7 @@ public class ExampleApplication extends Application
 				}
 			})
 			.build();
+
+		ContentSettings.getInstance().getUpdateManager().checkForUpdates();
 	}
 }

@@ -12,6 +12,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -46,7 +47,7 @@ public class DefaultUpdateManager implements UpdateManager
 		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
 		updates.onNext(observer);
 		checkForBundle(observer);
-		return observer;
+		return observer.observeOn(AndroidSchedulers.mainThread());
 	}
 
 	private void checkForBundle(Observer<UpdateContentProgress> observer)
@@ -128,7 +129,7 @@ public class DefaultUpdateManager implements UpdateManager
 		Subject<UpdateContentProgress> subject = BehaviorSubject.create();
 		updates.onNext(subject);
 		checkForUpdates(lastUpdate, subject);
-		return subject;
+		return subject.observeOn(AndroidSchedulers.mainThread());
 	}
 
 	private void checkForUpdates(long lastUpdate, Observer<UpdateContentProgress> observer)
@@ -346,6 +347,6 @@ public class DefaultUpdateManager implements UpdateManager
 	@Override
 	public Observable<Observable<UpdateContentProgress>> updates()
 	{
-		return updates;
+		return updates.observeOn(AndroidSchedulers.mainThread());
 	}
 }
