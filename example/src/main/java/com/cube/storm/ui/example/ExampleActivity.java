@@ -13,5 +13,4 @@ public class ExampleActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 	}
-
 }

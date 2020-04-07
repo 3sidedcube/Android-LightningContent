@@ -2,6 +2,7 @@ package com.cube.storm.content.lib.worker;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.work.Data;
 import androidx.work.RxWorker;
 import androidx.work.WorkerParameters;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
@@ -50,9 +51,9 @@ public class ContentUpdateWorker extends RxWorker
 	{
 		return updateManager
 			       .checkForUpdates()
-			       .switchMapSingle(updateContentProgress -> this.setProgress(updateContentProgress.toWorkerData()))
 			       .ignoreElements()
+			       //.concatMapCompletable(updateContentProgress -> this.setProgress(updateContentProgress.toWorkerData()).ignoreElement())
 			       .toSingleDefault(Result.success())
-			       .onErrorReturnItem(Result.failure());
+			       .onErrorReturn(err -> Result.failure(new Data.Builder().putString("error", err.getMessage()).build()));
 	}
 }
