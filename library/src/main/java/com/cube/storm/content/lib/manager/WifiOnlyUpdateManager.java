@@ -53,7 +53,7 @@ public class WifiOnlyUpdateManager implements UpdateManager
 
 	private boolean canDownload()
 	{
-		return preferences.getBoolean("wifi_only", false) && !isConnectedToWifi();
+		return !preferences.getBoolean("wifi_only", false) || isConnectedToWifi();
 	}
 
 	/**
