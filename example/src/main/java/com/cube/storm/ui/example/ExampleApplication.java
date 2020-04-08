@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Environment;
+import com.cube.storm.content.lib.helper.BundleHelper;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.worker.BackgroundWorkerUpdateManager;
 
@@ -24,11 +25,14 @@ public class ExampleApplication extends Application
 			{
 				@Override public void onUpdateDownloaded()
 				{
-					Log.d("3SC", "onUpdateDownloaded");
+					Log.d("3SC", "onUpdateDownloaded " + BundleHelper.readContentTimestamp());
 				}
 			})
 			.build();
 
-		ContentSettings.getInstance().getUpdateManager().checkForUpdates();
+		BundleHelper.clearCache();
+
+		Log.d("3SC", "Update content " + BundleHelper.readContentTimestamp());
+		ContentSettings.getInstance().getUpdateManager().scheduleBackgroundUpdates();
 	}
 }

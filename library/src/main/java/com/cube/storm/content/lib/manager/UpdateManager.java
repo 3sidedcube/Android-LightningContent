@@ -1,7 +1,8 @@
 package com.cube.storm.content.lib.manager;
 
+import androidx.annotation.NonNull;
 import com.cube.storm.content.lib.helper.BundleHelper;
-import com.cube.storm.content.model.UpdateContentProgress;
+import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Observable;
 
 /**
@@ -21,7 +22,7 @@ public interface UpdateManager
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	Observable<UpdateContentProgress> checkForBundle();
+	UpdateContentRequest checkForBundle();
 
 	/**
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
@@ -30,13 +31,13 @@ public interface UpdateManager
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	default Observable<UpdateContentProgress> checkForUpdates()
+	default UpdateContentRequest checkForUpdates()
 	{
 		Long bundleTimestamp = BundleHelper.readContentTimestamp();
 
 		if (bundleTimestamp == null)
 		{
-			return Observable.error(new IllegalStateException("Cannot check for updates without timestamp"));
+			return checkForBundle();
 		}
 		else
 		{
@@ -51,7 +52,14 @@ public interface UpdateManager
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */
-	Observable<UpdateContentProgress> checkForUpdates(final long lastUpdate);
+	UpdateContentRequest checkForUpdates(final long lastUpdate);
+
+	/**
+	 * Downloads a tar.gz file from the given endpoint
+	 *
+	 * @param endpoint The endpoint to the tar.gz bundle/delta file
+	 */
+	UpdateContentRequest downloadUpdates(@NonNull String endpoint);
 
 	/**
 	 * Schedules periodic background content updates that should run even if the app is closed.
@@ -61,5 +69,5 @@ public interface UpdateManager
 	/**
 	 * Returns an observable which emits further observables representing content updates.
 	 */
-	Observable<Observable<UpdateContentProgress>> updates();
+	Observable<UpdateContentRequest> updates();
 }
