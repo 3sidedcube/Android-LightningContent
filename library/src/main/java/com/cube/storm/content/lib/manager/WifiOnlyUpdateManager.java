@@ -5,7 +5,9 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
-import com.cube.storm.content.model.UpdateContentProgress;
+import androidx.annotation.NonNull;
+import com.cube.storm.content.lib.worker.ContentUpdateWorker;
+import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Observable;
 
 /**
@@ -32,21 +34,31 @@ public class WifiOnlyUpdateManager implements UpdateManager
 	}
 
 	@Override
-	public Observable<UpdateContentProgress> checkForBundle()
+	public UpdateContentRequest checkForBundle()
 	{
 		if (!canDownload())
 		{
-			return Observable.error(new IllegalStateException("Not connected to wifi"));
+			return new UpdateContentRequest(
+				Long.toString(System.currentTimeMillis()),
+				ContentUpdateWorker.UpdateType.FULL_BUNDLE,
+				null,
+				Observable.error(new IllegalStateException("Not connected to wifi"))
+			);
 		}
 		return delegate.checkForBundle();
 	}
 
 	@Override
-	public Observable<UpdateContentProgress> checkForUpdates(long lastUpdate)
+	public UpdateContentRequest checkForUpdates(long lastUpdate)
 	{
 		if (!canDownload())
 		{
-			return Observable.error(new IllegalStateException("Not connected to wifi"));
+			return new UpdateContentRequest(
+				Long.toString(System.currentTimeMillis()),
+				ContentUpdateWorker.UpdateType.DELTA,
+				lastUpdate,
+				Observable.error(new IllegalStateException("Not connected to wifi"))
+			);
 		}
 		return delegate.checkForUpdates(lastUpdate);
 	}
@@ -54,6 +66,21 @@ public class WifiOnlyUpdateManager implements UpdateManager
 	private boolean canDownload()
 	{
 		return !preferences.getBoolean("wifi_only", false) || isConnectedToWifi();
+	}
+
+	@Override
+	public UpdateContentRequest downloadUpdates(@NonNull String endpoint)
+	{
+		if (!canDownload())
+		{
+			return new UpdateContentRequest(
+				Long.toString(System.currentTimeMillis()),
+				ContentUpdateWorker.UpdateType.DIRECT_DOWNLOAD,
+				null,
+				Observable.error(new IllegalStateException("Not connected to wifi"))
+			);
+		}
+		return delegate.downloadUpdates(endpoint);
 	}
 
 	/**
@@ -86,7 +113,7 @@ public class WifiOnlyUpdateManager implements UpdateManager
 	}
 
 	@Override
-	public Observable<Observable<UpdateContentProgress>> updates()
+	public Observable<UpdateContentRequest> updates()
 	{
 		return delegate.updates();
 	}
