@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import timber.log.Timber;
 
 import java.io.File;
 
@@ -19,6 +20,7 @@ public class BundleHelper
 	 */
 	public static void clearCache()
 	{
+		Timber.tag("storm_diagnostics").i("Clearing cached content");
 		String path = ContentSettings.getInstance().getStoragePath();
 		FileHelper.deleteRecursive(new File(path, "pages/"));
 		FileHelper.deleteRecursive(new File(path, "data/"));
