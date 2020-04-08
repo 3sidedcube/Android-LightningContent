@@ -2,10 +2,13 @@ package com.cube.storm.content.lib.manager;
 
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
+import com.cube.storm.content.lib.worker.ContentUpdateWorker;
 import com.cube.storm.content.model.UpdateContentProgress;
+import com.cube.storm.content.model.UpdateContentRequest;
 import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -19,6 +22,7 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
+import timber.log.Timber;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -30,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -43,23 +48,29 @@ public class DefaultUpdateManager implements UpdateManager
 {
 	private AsyncHttpClient apiClient;
 
-	private Subject<Observable<UpdateContentProgress>> updates = PublishSubject.create();
+	private Subject<UpdateContentRequest> updates = PublishSubject.create();
 
 	/**
 	 * Downloads the latest full bundle from the server
 	 */
 	@Override
-	public Observable<UpdateContentProgress> checkForBundle()
+	public UpdateContentRequest checkForBundle()
 	{
 		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
-		updates.onNext(observer);
+		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
+			Long.toString(System.currentTimeMillis()),
+			ContentUpdateWorker.UpdateType.FULL_BUNDLE,
+			null,
+			observer.observeOn(AndroidSchedulers.mainThread()).sample(100, TimeUnit.MILLISECONDS)
+		);
+		updates.onNext(updateContentRequest);
 		checkForBundle(observer);
-		return observer.observeOn(AndroidSchedulers.mainThread());
+		return updateContentRequest;
 	}
 
 	private void checkForBundle(Observer<UpdateContentProgress> observer)
 	{
-		observer.onNext(UpdateContentProgress.checkingForBundle());
+		observer.onNext(UpdateContentProgress.checking());
 		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
@@ -131,17 +142,23 @@ public class DefaultUpdateManager implements UpdateManager
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
 	 */
 	@Override
-	public Observable<UpdateContentProgress> checkForUpdates(final long lastUpdate)
+	public UpdateContentRequest checkForUpdates(final long lastUpdate)
 	{
-		Subject<UpdateContentProgress> subject = BehaviorSubject.create();
-		updates.onNext(subject);
-		checkForUpdates(lastUpdate, subject);
-		return subject.observeOn(AndroidSchedulers.mainThread());
+		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
+		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
+			Long.toString(System.currentTimeMillis()),
+			ContentUpdateWorker.UpdateType.DELTA,
+			lastUpdate,
+			observer.observeOn(AndroidSchedulers.mainThread()).sample(100, TimeUnit.MILLISECONDS)
+		);
+		updates.onNext(updateContentRequest);
+		checkForUpdates(lastUpdate, observer);
+		return updateContentRequest;
 	}
 
 	private void checkForUpdates(long lastUpdate, Observer<UpdateContentProgress> observer)
 	{
-		observer.onNext(UpdateContentProgress.checkingForDelta());
+		observer.onNext(UpdateContentProgress.checking());
 		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
@@ -183,7 +200,7 @@ public class DefaultUpdateManager implements UpdateManager
 						toDownload = true;
 					}
 				}
-				
+
 				if (!toDownload)
 				{
 					observer.onComplete();
@@ -211,14 +228,31 @@ public class DefaultUpdateManager implements UpdateManager
 	 *
 	 * @param endpoint The endpoint to the tar.gz bundle/delta file
 	 */
+	public UpdateContentRequest downloadUpdates(@NonNull String endpoint)
+	{
+		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
+		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
+			Long.toString(System.currentTimeMillis()),
+			ContentUpdateWorker.UpdateType.DIRECT_DOWNLOAD,
+			null,
+			observer.observeOn(AndroidSchedulers.mainThread())
+		);
+		updates.onNext(updateContentRequest);
+		downloadUpdates(endpoint, observer);
+		return updateContentRequest;
+	}
+
 	public void downloadUpdates(String endpoint, Observer<UpdateContentProgress> observer)
 	{
+		Timber.tag("storm_diagnostics").i("Downloading from " + endpoint);
 		observer.onNext(UpdateContentProgress.downloading(0, 0));
 
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
 		{
 			// download to temp file
-			new File(ContentSettings.getInstance().getStoragePath() + "/delta").mkdir();
+			File deltaDirectory = new File(ContentSettings.getInstance().getStoragePath() + "/delta");
+			deleteRecursive(deltaDirectory);
+			deltaDirectory.mkdir();
 
 			apiClient = new AsyncHttpClient(endpoint);
 			apiClient.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath() + "/delta")
@@ -237,6 +271,7 @@ public class DefaultUpdateManager implements UpdateManager
 				@Override public void onSuccess()
 				{
 					super.onSuccess();
+					Timber.tag("storm_diagnostics").i("Download completed from " + endpoint);
 
 					try
 					{
@@ -314,6 +349,7 @@ public class DefaultUpdateManager implements UpdateManager
 
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
+						Timber.tag("storm_diagnostics").i("Update completed from " + endpoint);
 						observer.onComplete();
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
@@ -352,7 +388,7 @@ public class DefaultUpdateManager implements UpdateManager
 	}
 
 	@Override
-	public Observable<Observable<UpdateContentProgress>> updates()
+	public Observable<UpdateContentRequest> updates()
 	{
 		return updates.observeOn(AndroidSchedulers.mainThread());
 	}

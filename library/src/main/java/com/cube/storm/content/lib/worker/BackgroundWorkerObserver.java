@@ -25,6 +25,12 @@ class BackgroundWorkerObserver implements androidx.lifecycle.Observer<WorkInfo>
 	{
 		switch (workInfo.getState())
 		{
+			case ENQUEUED:
+			case BLOCKED:
+			{
+				subject.onNext(UpdateContentProgress.waiting());
+				break;
+			}
 			case RUNNING:
 			{
 				if (workInfo.getProgress() != Data.EMPTY)
@@ -45,11 +51,6 @@ class BackgroundWorkerObserver implements androidx.lifecycle.Observer<WorkInfo>
 			{
 				subject.onComplete();
 				workLiveData.removeObserver(this);
-				break;
-			}
-			case BLOCKED:
-			case ENQUEUED:
-			{
 				break;
 			}
 		}

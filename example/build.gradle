@@ -44,7 +44,7 @@ android {
 			apiVersion = "v1.5"
 			orgName = "ARC_STORM"
 			orgId = "1"
-			appId = "16"
+			appId = "1"
 			bundleEnvironment = "live"
 			bundleTimestamp = null
 			bundleDownloadStrategy = BundleDownloadStrategy.IF_MISSING
