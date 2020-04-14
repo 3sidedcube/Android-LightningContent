@@ -13,6 +13,9 @@ import timber.log.Timber;
 
 import java.io.File;
 
+/**
+ * Utility methods relating to Storm content bundles and their contents
+ */
 public class BundleHelper
 {
 	/**

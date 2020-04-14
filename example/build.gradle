@@ -1,5 +1,3 @@
-import com.cube.storm.content.BundleDownloadStrategy
-
 buildscript {
 	repositories {
 		maven { url "http://oss.3sidedcube.com:8081/artifactory/internal" }
@@ -10,21 +8,21 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application'
-    id 'io.franzbecker.gradle-lombok' version '1.14'
+	id 'com.android.application'
+	id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 apply plugin: 'com.cube.storm.content'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+	compileSdkVersion rootProject.ext.compileSdkVersion
 
-    defaultConfig {
-        applicationId "com.cube.storm.ui.example"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+	defaultConfig {
+		applicationId "com.cube.storm.ui.example"
+		minSdkVersion rootProject.ext.minSdkVersion
+		targetSdkVersion rootProject.ext.targetSdkVersion
+		versionCode 1
+		versionName "1.0"
 
 		/**
 		 * Specify Storm configuration. Accepted values:
@@ -47,32 +45,32 @@ android {
 			appId = "1"
 			bundleEnvironment = "live"
 			bundleTimestamp = null
-			bundleDownloadStrategy = BundleDownloadStrategy.IF_MISSING
+			bundleDownloadStrategy = com.cube.storm.content.BundleDownloadStrategy.IF_MISSING
 			authUsername = ""
 			authPassword = ""
 		}
-    }
+	}
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
 
-    android {
-        lintOptions {
-            abortOnError false
-        }
-    }
+	android {
+		lintOptions {
+			abortOnError false
+		}
+	}
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':library')
+	implementation fileTree(dir: 'libs', include: ['*.jar'])
+	implementation project(':library')
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.3sidedcube.storm:util:1.0.0'
+	implementation 'androidx.appcompat:appcompat:1.1.0'
+	implementation 'com.3sidedcube.storm:util:1.0.0'
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 
-    compileOnly 'org.projectlombok:lombok:1.18.2'
-    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+	compileOnly 'org.projectlombok:lombok:1.18.2'
+	annotationProcessor 'org.projectlombok:lombok:1.18.2'
 }
