@@ -4,6 +4,9 @@ import android.net.Uri;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.model.Manifest;
 
+/**
+ * Utility methods relating to Storm content bundles and their contents
+ */
 public class BundleHelper
 {
 	public static Long readContentTimestamp()

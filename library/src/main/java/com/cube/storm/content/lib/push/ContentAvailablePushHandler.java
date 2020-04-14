@@ -12,8 +12,16 @@ import java.util.Map;
  */
 public class ContentAvailablePushHandler
 {
+	/**
+	 * Default notification type identifier for Storm content available pushes
+	 */
 	public static final String CONTENT_AVAILABLE_PUSH_TYPE = "background";
 
+	/**
+	 * Extracts data from a content-available push payload and decides whether to update or not
+	 *
+	 * @param data
+	 */
 	public static void handleContentAvailablePush(Map<String, String> data)
 	{
 		Timber.tag("storm_diagnostics").i("Handling content available push: " + data.toString());
@@ -45,8 +53,7 @@ public class ContentAvailablePushHandler
 			return;
 		}
 
-
-			Timber.tag("storm_diagnostics").i("Local bundle timestamp: " + localTimestamp);
+		Timber.tag("storm_diagnostics").i("Local bundle timestamp: " + localTimestamp);
 
 		// If the remote bundle is earlier or the same as our local one then stop
 		if (localTimestamp >= remoteTimestamp)
@@ -61,7 +68,6 @@ public class ContentAvailablePushHandler
 			Timber.tag("storm_diagnostics").i("App cannot update this far");
 			return;
 		}
-
 
 		Timber.tag("storm_diagnostics").i("Downloading from " + remoteEndpoint);
 		ContentSettings.getInstance().getUpdateManager().downloadUpdates(remoteEndpoint);

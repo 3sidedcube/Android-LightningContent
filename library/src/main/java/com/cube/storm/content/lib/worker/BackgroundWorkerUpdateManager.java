@@ -37,12 +37,23 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 {
 	private Subject<UpdateContentRequest> updates = PublishSubject.create();
 
+	/**
+	 * Constraints that the background workers should abide by
+	 */
 	@NonNull
 	private static Constraints createWorkConstraints()
 	{
 		return new Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build();
 	}
 
+	/**
+	 * Creates a {@link OneTimeWorkRequest} that when invoked will perform the specified Storm update request.
+	 *
+	 * @param updateType      Type of background update to perform
+	 * @param updateTimestamp Optional timestamp representing the current local Storm bundle
+	 * @param updateEndpoint  Optional endpoint from which to download data. This is only relevant for the DIRECT_DOWNLOAD UpdateType.
+	 * @return
+	 */
 	@NonNull
 	private static OneTimeWorkRequest createOneTimeWorkRequest(
 		@NonNull ContentUpdateWorker.UpdateType updateType,
@@ -51,10 +62,11 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	)
 	{
 		Data.Builder inputDataBuilder = new Data.Builder()
-			                                .putString(ContentUpdateWorker.INPUT_KEY_UPDATE_MANAGER,
-			                                           ContentUpdateWorker.UPDATE_MANAGER_IMPL_DEFAULT
-			                                )
-			                                .putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, updateType.ordinal());
+			                                // When invoked, the worker will delegate to DefaultUpdateManager
+			                                .putString(
+				                                ContentUpdateWorker.INPUT_KEY_UPDATE_MANAGER,
+				                                ContentUpdateWorker.UPDATE_MANAGER_IMPL_DEFAULT
+			                                ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, updateType.ordinal());
 
 		if (updateTimestamp != null)
 		{
@@ -79,11 +91,11 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	private static PeriodicWorkRequest createPeriodicWorkRequest()
 	{
 		Data inputData = new Data.Builder()
+			                 // When invoked, the worker will delegate to BackgroundWorkerUpdateManager
+			                 // This way, we can ensure there is only one work job executed concurrently
 			                 .putString(ContentUpdateWorker.INPUT_KEY_UPDATE_MANAGER,
 			                            ContentUpdateWorker.UPDATE_MANAGER_IMPL_WORKER
-			                 )
-			                 .putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, DELTA.ordinal())
-			                 .build();
+			                 ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, DELTA.ordinal()).build();
 		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 20L, MINUTES, 10L, MINUTES)
 			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
 			       .setInputData(inputData)
