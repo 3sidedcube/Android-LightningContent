@@ -8,10 +8,18 @@ import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 import lombok.Getter;
 
+/**
+ * Adapter for the {@link WorkInfo} {@link LiveData} provided by Android {@link androidx.work.WorkManager} so that it
+ * emits events compatible with RxJava.
+ */
 class BackgroundWorkerObserver implements androidx.lifecycle.Observer<WorkInfo>
 {
 	private LiveData<WorkInfo> workLiveData;
 
+	/**
+	 * BehaviorSubject so that subscribers receive the most recent event upon subscription, and then all subsequent
+	 * events
+	 */
 	@Getter
 	private Subject<UpdateContentProgress> subject = BehaviorSubject.create();
 

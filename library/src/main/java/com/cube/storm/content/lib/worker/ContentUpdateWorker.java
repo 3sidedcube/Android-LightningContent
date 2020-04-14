@@ -11,6 +11,19 @@ import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Single;
 import timber.log.Timber;
 
+/**
+ * Background worker responsible for performing a task relating to content updates.
+ * <p />
+ * It is possible to tell this worker to do one of 4 different tasks:
+ * <ol>
+ *     <li>Full bundle check and download</li>
+ *     <li>Delta bundle check and download from specified timestamp</li>
+ *     <li>Delta bundle check and download using timestamp from local bundle</li>
+ *     <li>Direct bundle download using specified URL</li>
+ * </ol>
+ * <p />
+ * The worker will emit progress updates based on the progress of the underlying task.
+ */
 public class ContentUpdateWorker extends RxWorker
 {
 	public static final String INPUT_KEY_UPDATE_MANAGER = "update_manager_impl";

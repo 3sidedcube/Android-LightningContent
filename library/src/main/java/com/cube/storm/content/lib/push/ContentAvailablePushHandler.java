@@ -9,11 +9,29 @@ import java.util.Map;
 
 /**
  * Provides functionality related to handling content available pushes from the Storm server
+ * <p/>
+ * It is not hooked up by default. Apps should listen for pushes of type {@code CONTENT_AVAILABLE_PUSH_TYPE} and then
+ * handle the push payload with {@link ContentAvailablePushHandler#handleContentAvailablePush}.
  */
 public class ContentAvailablePushHandler
 {
+	/**
+	 * Default notification type identifier for Storm content available pushes
+	 */
 	public static final String CONTENT_AVAILABLE_PUSH_TYPE = "background";
 
+	/**
+	 * Extracts data from a content-available push payload and decides whether to update or not
+	 * <p/>
+	 * The push payload contains a URI to a full bundle. This is to avoid receipients overloading the server by asking
+	 * for a delta bundle. For this reason, content-available pushes should only be handled on devices with sufficient
+	 * unmetered connectivity, battery, etc.
+	 * <p/>
+	 * The push payload also contains the timestamp of the most recent landmark publish before the update. This handler
+	 * will not update past a landmark/
+	 *
+	 * @param data
+	 */
 	public static void handleContentAvailablePush(Map<String, String> data)
 	{
 		Timber.tag("storm_diagnostics").i("Handling content available push: " + data.toString());
@@ -45,8 +63,7 @@ public class ContentAvailablePushHandler
 			return;
 		}
 
-
-			Timber.tag("storm_diagnostics").i("Local bundle timestamp: " + localTimestamp);
+		Timber.tag("storm_diagnostics").i("Local bundle timestamp: " + localTimestamp);
 
 		// If the remote bundle is earlier or the same as our local one then stop
 		if (localTimestamp >= remoteTimestamp)
@@ -61,7 +78,6 @@ public class ContentAvailablePushHandler
 			Timber.tag("storm_diagnostics").i("App cannot update this far");
 			return;
 		}
-
 
 		Timber.tag("storm_diagnostics").i("Downloading from " + remoteEndpoint);
 		ContentSettings.getInstance().getUpdateManager().downloadUpdates(remoteEndpoint);
