@@ -1,6 +1,8 @@
 package com.cube.storm.content.lib.worker;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
@@ -171,7 +173,9 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	{
 		LiveData<WorkInfo> workInfoLiveData = workManager.getWorkInfoByIdLiveData(workId);
 		BackgroundWorkerObserver workLiveDataObserver = new BackgroundWorkerObserver(workInfoLiveData);
-		workInfoLiveData.observeForever(workLiveDataObserver);
+		new Handler(Looper.getMainLooper()).post(() -> {
+			workInfoLiveData.observeForever(workLiveDataObserver);
+		});
 		return workLiveDataObserver.getSubject();
 	}
 
@@ -199,7 +203,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@Override
 	public void scheduleBackgroundUpdates()
 	{
-		Timber.tag("storm_diagnostics").i("Scheduling background content updates");
+		log("Scheduling background content updates");
 		PeriodicWorkRequest workRequest = createPeriodicWorkRequest();
 		workManager.enqueueUniquePeriodicWork(CONTENT_CHECK_SCHEDULE_NAME,
 		                                      ExistingPeriodicWorkPolicy.REPLACE,
