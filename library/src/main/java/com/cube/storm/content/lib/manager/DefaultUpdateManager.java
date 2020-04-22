@@ -16,13 +16,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
-import timber.log.Timber;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -34,7 +32,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -61,7 +58,7 @@ public class DefaultUpdateManager implements UpdateManager
 			Long.toString(System.currentTimeMillis()),
 			ContentUpdateWorker.UpdateType.FULL_BUNDLE,
 			null,
-			observer.observeOn(AndroidSchedulers.mainThread()).sample(100, TimeUnit.MILLISECONDS)
+			observer
 		);
 		updates.onNext(updateContentRequest);
 		checkForBundle(observer);
@@ -149,7 +146,7 @@ public class DefaultUpdateManager implements UpdateManager
 			Long.toString(System.currentTimeMillis()),
 			ContentUpdateWorker.UpdateType.DELTA,
 			lastUpdate,
-			observer.observeOn(AndroidSchedulers.mainThread()).sample(100, TimeUnit.MILLISECONDS)
+			observer
 		);
 		updates.onNext(updateContentRequest);
 		checkForUpdates(lastUpdate, observer);
@@ -235,7 +232,7 @@ public class DefaultUpdateManager implements UpdateManager
 			Long.toString(System.currentTimeMillis()),
 			ContentUpdateWorker.UpdateType.DIRECT_DOWNLOAD,
 			null,
-			observer.observeOn(AndroidSchedulers.mainThread())
+			observer
 		);
 		updates.onNext(updateContentRequest);
 		downloadUpdates(endpoint, observer);
@@ -244,7 +241,6 @@ public class DefaultUpdateManager implements UpdateManager
 
 	public void downloadUpdates(String endpoint, Observer<UpdateContentProgress> observer)
 	{
-		Timber.tag("storm_diagnostics").i("Downloading from " + endpoint);
 		observer.onNext(UpdateContentProgress.downloading(0, 0));
 
 		if (!TextUtils.isEmpty(ContentSettings.getInstance().getStoragePath()))
@@ -271,10 +267,10 @@ public class DefaultUpdateManager implements UpdateManager
 				@Override public void onSuccess()
 				{
 					super.onSuccess();
-					Timber.tag("storm_diagnostics").i("Download completed from " + endpoint);
-
 					try
 					{
+						observer.onNext(UpdateContentProgress.verifying());
+
 						// delete the bundle
 						new File(getFilePath() + "/bundle.tar").delete();
 
@@ -282,6 +278,7 @@ public class DefaultUpdateManager implements UpdateManager
 
 						if (integrityCheck(getFilePath()))
 						{
+							observer.onNext(UpdateContentProgress.deploying());
 							// Move files from /delta to ../
 							copyDirectory(new File(getFilePath()), new File(ContentSettings.getInstance().getStoragePath()));
 							deleteRecursive(new File(getFilePath()));
@@ -349,7 +346,6 @@ public class DefaultUpdateManager implements UpdateManager
 
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
-						Timber.tag("storm_diagnostics").i("Update completed from " + endpoint);
 						observer.onComplete();
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
@@ -390,7 +386,7 @@ public class DefaultUpdateManager implements UpdateManager
 	@Override
 	public Observable<UpdateContentRequest> updates()
 	{
-		return updates.observeOn(AndroidSchedulers.mainThread());
+		return updates;
 	}
 
 	/**

@@ -203,7 +203,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@Override
 	public void scheduleBackgroundUpdates()
 	{
-		Timber.tag("storm_diagnostics").i("Scheduling background content updates");
+		log("Scheduling background content updates");
 		PeriodicWorkRequest workRequest = createPeriodicWorkRequest();
 		workManager.enqueueUniquePeriodicWork(CONTENT_CHECK_SCHEDULE_NAME,
 		                                      ExistingPeriodicWorkPolicy.REPLACE,
