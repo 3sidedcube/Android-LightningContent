@@ -1,7 +1,7 @@
 package com.cube.storm.content.lib.handler;
 
+import lombok.Getter;
 import net.callumtaylor.asynchttp.response.CacheResponseHandler;
-
 import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarInputStream;
 
@@ -15,8 +15,6 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
-
-import lombok.Getter;
 
 /**
  * Caches the response directly to disk. Useful when downloading
@@ -90,8 +88,8 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
-			onFailure();
+			// Propagate checked exception as an unchecked exception
+			throw new RuntimeException(e);
 		}
 	}
 

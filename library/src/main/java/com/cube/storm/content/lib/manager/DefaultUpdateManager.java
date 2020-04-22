@@ -263,11 +263,11 @@ public class DefaultUpdateManager implements UpdateManager
 
 				@Override public void onSuccess()
 				{
+					try
+					{
 					super.onSuccess();
 					Timber.tag("storm_diagnostics").i("Download completed from " + endpoint);
 
-					try
-					{
 						// delete the bundle
 						new File(getFilePath() + "/bundle.tar").delete();
 
@@ -317,8 +317,6 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
-
 						observer.onError(e);
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
