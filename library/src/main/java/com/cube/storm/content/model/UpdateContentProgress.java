@@ -24,6 +24,12 @@ public class UpdateContentProgress
 	}
 
 	@NonNull
+	public static UpdateContentProgress deploying()
+	{
+		return new UpdateContentProgress(Phase.DEPLOYING, 0, 0);
+	}
+
+	@NonNull
 	public static UpdateContentProgress downloading(long bytesDownloaded, long bytesTotal)
 	{
 		return new UpdateContentProgress(Phase.DOWNLOADING, bytesDownloaded, bytesTotal);
@@ -38,12 +44,20 @@ public class UpdateContentProgress
 			workerData.getLong(WORKER_DATA_KEY_PROGRESS_MAX, 0L));
 	}
 
+	@NonNull
+	public static UpdateContentProgress verifying()
+	{
+		return new UpdateContentProgress(Phase.VERIFYING, 0, 0);
+	}
+
 	public enum Phase
 	{
 		UNKNOWN,
 		WAITING,
 		CHECKING,
-		DOWNLOADING
+		DOWNLOADING,
+		VERIFYING,
+		DEPLOYING
 	}
 
 	Phase phase;
