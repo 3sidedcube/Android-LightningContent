@@ -19,7 +19,7 @@ import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 import timber.log.Timber;
 
@@ -28,7 +28,7 @@ import java.util.UUID;
 import static com.cube.storm.content.lib.worker.ContentUpdateWorker.UpdateType.DELTA;
 import static com.cube.storm.content.lib.worker.ContentUpdateWorker.UpdateType.DIRECT_DOWNLOAD;
 import static com.cube.storm.content.lib.worker.ContentUpdateWorker.UpdateType.FULL_BUNDLE;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.HOURS;
 
 /**
  * Implementation of {@link UpdateManager} that uses Android {@link WorkManager} to invoke and schedule content checks.
@@ -37,7 +37,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
  */
 public class BackgroundWorkerUpdateManager implements UpdateManager
 {
-	private Subject<UpdateContentRequest> updates = PublishSubject.create();
+	private Subject<UpdateContentRequest> updates = BehaviorSubject.create();
 
 	/**
 	 * Constraints that the background workers should abide by
@@ -98,7 +98,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 			                 .putString(ContentUpdateWorker.INPUT_KEY_UPDATE_MANAGER,
 			                            ContentUpdateWorker.UPDATE_MANAGER_IMPL_WORKER
 			                 ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, DELTA.ordinal()).build();
-		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 20L, MINUTES, 10L, MINUTES)
+		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 24L, HOURS, 6L, HOURS)
 			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
 			       .setInputData(inputData)
 			       .build();
@@ -126,7 +126,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(FULL_BUNDLE, null, null);
 		log(String.format("Enqueuing bundle check (%s)", workRequest.getId().toString()));
-		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.APPEND, workRequest);
+		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
 			workRequest.getId().toString(),
 			FULL_BUNDLE,
@@ -142,7 +142,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, null, null);
 		log(String.format("Enqueuing update check (%s)", workRequest.getId().toString()));
-		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.APPEND, workRequest);
+		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
 			workRequest.getId().toString(),
 			DELTA,
@@ -158,7 +158,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, lastUpdate, null);
 		log(String.format("Enqueuing update check from %d (%s)", lastUpdate, workRequest.getId().toString()));
-		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.APPEND, workRequest);
+		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
 			workRequest.getId().toString(),
 			DELTA,

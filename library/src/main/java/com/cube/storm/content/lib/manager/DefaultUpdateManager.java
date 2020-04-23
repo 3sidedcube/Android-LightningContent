@@ -16,7 +16,6 @@ import com.google.gson.JsonObject;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
@@ -38,7 +37,7 @@ public class DefaultUpdateManager implements UpdateManager
 {
 	private AsyncHttpClient apiClient;
 
-	private Subject<UpdateContentRequest> updates = PublishSubject.create();
+	private Subject<UpdateContentRequest> updates = BehaviorSubject.create();
 
 	/**
 	 * Downloads the latest full bundle from the server
