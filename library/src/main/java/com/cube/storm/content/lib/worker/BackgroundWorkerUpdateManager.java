@@ -15,6 +15,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
+import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
@@ -45,7 +46,10 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@NonNull
 	private static Constraints createWorkConstraints()
 	{
-		return new Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build();
+		boolean canDownloadOnCellular = ContentSettings.getInstance().getPolicyManager().isCellularDownloadPermitted();
+		return new Constraints.Builder()
+			       .setRequiredNetworkType(canDownloadOnCellular ? NetworkType.CONNECTED : NetworkType.UNMETERED)
+			       .build();
 	}
 
 	/**

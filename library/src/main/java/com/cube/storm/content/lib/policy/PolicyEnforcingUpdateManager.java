@@ -1,11 +1,8 @@
-package com.cube.storm.content.lib.manager;
+package com.cube.storm.content.lib.policy;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
+import com.cube.storm.ContentSettings;
+import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.worker.ContentUpdateWorker;
 import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Observable;
@@ -14,16 +11,12 @@ import io.reactivex.Observable;
  * {@link UpdateManager} which ensures updates only occur on a wi-fi connection, otherwise delegating to another
  * UpdateManager.
  */
-public class WifiOnlyUpdateManager implements UpdateManager
+public class PolicyEnforcingUpdateManager implements UpdateManager
 {
-	private ConnectivityManager connectivityManager;
-	private SharedPreferences preferences;
 	private UpdateManager delegate;
 
-	public WifiOnlyUpdateManager(Context context, UpdateManager delegate)
+	public PolicyEnforcingUpdateManager(UpdateManager delegate)
 	{
-		connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		this.delegate = delegate;
 	}
 
@@ -36,7 +29,7 @@ public class WifiOnlyUpdateManager implements UpdateManager
 	@Override
 	public UpdateContentRequest checkForBundle()
 	{
-		if (!canDownload())
+		if (!ContentSettings.getInstance().getPolicyManager().canUpdate())
 		{
 			return new UpdateContentRequest(
 				Long.toString(System.currentTimeMillis()),
@@ -51,7 +44,7 @@ public class WifiOnlyUpdateManager implements UpdateManager
 	@Override
 	public UpdateContentRequest checkForUpdates(long lastUpdate)
 	{
-		if (!canDownload())
+		if (!ContentSettings.getInstance().getPolicyManager().canUpdate())
 		{
 			return new UpdateContentRequest(
 				Long.toString(System.currentTimeMillis()),
@@ -63,15 +56,10 @@ public class WifiOnlyUpdateManager implements UpdateManager
 		return delegate.checkForUpdates(lastUpdate);
 	}
 
-	private boolean canDownload()
-	{
-		return !preferences.getBoolean("wifi_only", false) || isConnectedToWifi();
-	}
-
 	@Override
 	public UpdateContentRequest downloadUpdates(@NonNull String endpoint)
 	{
-		if (!canDownload())
+		if (!ContentSettings.getInstance().getPolicyManager().canUpdate())
 		{
 			return new UpdateContentRequest(
 				Long.toString(System.currentTimeMillis()),
@@ -81,29 +69,6 @@ public class WifiOnlyUpdateManager implements UpdateManager
 			);
 		}
 		return delegate.downloadUpdates(endpoint);
-	}
-
-	/**
-	 * Checks if the user is connected to wifi or not. Ensure you provide the {@link android.Manifest.permission#ACCESS_WIFI_STATE} permission in
-	 * your manifest.
-	 *
-	 * @return True if connected, or the check failed. False if not connected. May return true even if the user has no
-	 * active internet connection with their selected wifi service
-	 */
-	private boolean isConnectedToWifi()
-	{
-		try
-		{
-			NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-			return networkInfo.isConnected();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-
-		// Assume they are.
-		return true;
 	}
 
 	@Override
