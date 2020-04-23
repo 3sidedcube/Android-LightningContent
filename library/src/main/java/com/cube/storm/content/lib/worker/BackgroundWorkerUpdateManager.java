@@ -88,7 +88,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 
 		Data inputData = inputDataBuilder.build();
 		return new OneTimeWorkRequest.Builder(ContentUpdateWorker.class)
-			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
+			       .setConstraints(createWorkConstraints())
 			       .setInputData(inputData)
 			       .build();
 	}
@@ -103,14 +103,13 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 			                            ContentUpdateWorker.UPDATE_MANAGER_IMPL_WORKER
 			                 ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, DELTA.ordinal()).build();
 		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 20L, MINUTES, 10L, MINUTES)
-			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
+			       .setConstraints(createWorkConstraints())
 			       .setInputData(inputData)
 			       .build();
 	}
 
 	private static final String CONTENT_CHECK_WORK_NAME = "storm_content_check";
 	private static final String CONTENT_CHECK_SCHEDULE_NAME = "storm_content_check_schedule";
-	private static final Constraints CONTENT_CHECK_WORK_CONSTRAINTS = createWorkConstraints();
 
 	private WorkManager workManager;
 
