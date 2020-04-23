@@ -47,8 +47,13 @@ class BackgroundWorkerObserver implements androidx.lifecycle.Observer<WorkInfo>
 				}
 				break;
 			}
-			case FAILED:
 			case CANCELLED:
+			{
+				subject.onError(new IllegalStateException("Job cancelled"));
+				workLiveData.removeObserver(this);
+				break;
+			}
+			case FAILED:
 			{
 				String errorMessage = workInfo.getOutputData().getString("error");
 				subject.onError(new IllegalStateException(errorMessage));
