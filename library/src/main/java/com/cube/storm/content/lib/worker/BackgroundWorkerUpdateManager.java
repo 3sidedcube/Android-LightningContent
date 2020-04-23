@@ -98,7 +98,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 			                 .putString(ContentUpdateWorker.INPUT_KEY_UPDATE_MANAGER,
 			                            ContentUpdateWorker.UPDATE_MANAGER_IMPL_WORKER
 			                 ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, DELTA.ordinal()).build();
-		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 20L, MINUTES, 10L, MINUTES)
+		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 24L, HOURS, 6L, HOURS)
 			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
 			       .setInputData(inputData)
 			       .build();
