@@ -15,6 +15,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
+import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
@@ -45,7 +46,10 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@NonNull
 	private static Constraints createWorkConstraints()
 	{
-		return new Constraints.Builder().setRequiredNetworkType(NetworkType.UNMETERED).build();
+		boolean canDownloadOnCellular = ContentSettings.getInstance().getPolicyManager().isCellularDownloadPermitted();
+		return new Constraints.Builder()
+			       .setRequiredNetworkType(canDownloadOnCellular ? NetworkType.CONNECTED : NetworkType.UNMETERED)
+			       .build();
 	}
 
 	/**
@@ -84,7 +88,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 
 		Data inputData = inputDataBuilder.build();
 		return new OneTimeWorkRequest.Builder(ContentUpdateWorker.class)
-			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
+			       .setConstraints(createWorkConstraints())
 			       .setInputData(inputData)
 			       .build();
 	}
@@ -99,14 +103,13 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 			                            ContentUpdateWorker.UPDATE_MANAGER_IMPL_WORKER
 			                 ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, DELTA.ordinal()).build();
 		return new PeriodicWorkRequest.Builder(ContentUpdateWorker.class, 24L, HOURS, 6L, HOURS)
-			       .setConstraints(CONTENT_CHECK_WORK_CONSTRAINTS)
+			       .setConstraints(createWorkConstraints())
 			       .setInputData(inputData)
 			       .build();
 	}
 
 	private static final String CONTENT_CHECK_WORK_NAME = "storm_content_check";
 	private static final String CONTENT_CHECK_SCHEDULE_NAME = "storm_content_check_schedule";
-	private static final Constraints CONTENT_CHECK_WORK_CONSTRAINTS = createWorkConstraints();
 
 	private WorkManager workManager;
 

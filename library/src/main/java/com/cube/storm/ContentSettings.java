@@ -13,7 +13,10 @@ import com.cube.storm.content.lib.manager.DefaultMigrationManager;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
 import com.cube.storm.content.lib.manager.MigrationManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
+import com.cube.storm.content.lib.policy.PolicyEnforcingUpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
+import com.cube.storm.content.lib.policy.PolicyManager;
+import com.cube.storm.content.lib.policy.SharedPreferencesPolicyManager;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.AssetsResolver;
@@ -101,6 +104,11 @@ public class ContentSettings
 	 * Default {@link com.cube.storm.content.lib.manager.MigrationManager} to use throughout the module
 	 */
 	@Getter @Setter private MigrationManager migrationManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.policy.PolicyManager} to use throughout the module
+	 */
+	@Getter @Setter private PolicyManager policyManager;
 
 	/**
 	 * The path to the storage folder on disk
@@ -197,8 +205,9 @@ public class ContentSettings
 			this.context = context.getApplicationContext();
 
 			APIManager(new APIManager(){});
-			updateManager(new DefaultUpdateManager());
 			migrationManager(new DefaultMigrationManager());
+			policyManager(new SharedPreferencesPolicyManager(this.context));
+			updateManager(new PolicyEnforcingUpdateManager(new DefaultUpdateManager()));
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
@@ -387,6 +396,19 @@ public class ContentSettings
 		public Builder migrationManager(@NonNull MigrationManager manager)
 		{
 			construct.migrationManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default policy manager
+		 *
+		 * @param manager The new policy manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder policyManager(@NonNull PolicyManager manager)
+		{
+			construct.policyManager = manager;
 			return this;
 		}
 
