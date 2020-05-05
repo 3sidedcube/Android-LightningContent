@@ -1,7 +1,18 @@
+buildscript {
+	repositories {
+		maven { url "http://oss.3sidedcube.com:8081/artifactory/internal" }
+	}
+	dependencies {
+		classpath 'com.3sidedcube.storm:content-gradle-plugin:+'
+	}
+}
+
 plugins {
 	id 'com.android.application'
 	id 'io.franzbecker.gradle-lombok' version '1.14'
 }
+
+apply plugin: 'com.cube.storm.content'
 
 android {
 	compileSdkVersion rootProject.ext.compileSdkVersion
@@ -12,20 +23,37 @@ android {
 		targetSdkVersion rootProject.ext.targetSdkVersion
 		versionCode 1
 		versionName "1.0"
+
+		/**
+		 * Specify Storm configuration. Accepted values:
+		 * - apiBase: The base URL to use e.g. https://dev.3sidedcube.com
+		 * - apiVersion: The API version to use e.g. dev
+		 * - orgName: The first part of the Storm XXXX-1-1 slugs e.g. RSPB / ARC_STORM
+		 * - orgId: The second part of the Storm XXXX-7-129 slugs e.g. 7
+		 * - appId: The app ID to fetch content for e.g. 4
+		 * - bundleEnvironment: test or live. If test then you will need to supply auth details
+		 * - bundleTimestamp: date object specifying which bundle should be downloaded (leave null for latest)
+		 * - bundleDownloadStrategy: ALWAYS to download every time the app is assembled, IF_MISSING to download only once, NEVER to never download
+		 * - authUsername: used to auth when downloading a test bundle
+		 * - authPassword: used to auth when downloading a test bundle
+		 */
+		storm {
+			apiBase = "https://arc.cubeapis.com"
+			apiVersion = "v1.5"
+			orgName = "ARC_STORM"
+			orgId = "1"
+			appId = "1"
+			bundleEnvironment = "live"
+			bundleTimestamp = null
+			bundleDownloadStrategy = com.cube.storm.content.BundleDownloadStrategy.IF_MISSING
+			authUsername = ""
+			authPassword = ""
+		}
 	}
 
-	packagingOptions {
-		exclude 'META-INF/DEPENDENCIES.txt'
-		exclude 'META-INF/LICENSE.txt'
-		exclude 'META-INF/NOTICE.txt'
-		exclude 'META-INF/NOTICE'
-		exclude 'META-INF/LICENSE'
-		exclude 'META-INF/DEPENDENCIES'
-		exclude 'META-INF/notice.txt'
-		exclude 'META-INF/license.txt'
-		exclude 'META-INF/dependencies.txt'
-		exclude 'META-INF/LGPL2.1'
-		exclude 'LICENSE.txt'
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
 	}
 
 	android {
@@ -39,8 +67,9 @@ dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation project(':library')
 
-	implementation 'androidx.appcompat:appcompat:1.0.0'
-	implementation 'com.3sidedcube.storm:util:1.0.0-SNAPSHOT'
+	implementation 'androidx.appcompat:appcompat:1.1.0'
+	implementation 'com.3sidedcube.storm:util:1.0.0'
+	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 
 	compileOnly 'org.projectlombok:lombok:1.18.2'
 	annotationProcessor 'org.projectlombok:lombok:1.18.2'
