@@ -1,19 +1,18 @@
 package com.cube.storm.content.lib.manager;
 
 import android.text.TextUtils;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
+import com.cube.storm.content.lib.helper.BundleHelper;
+import com.cube.storm.content.lib.helper.FileHelper;
 import com.cube.storm.content.lib.worker.ContentUpdateWorker;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
-import com.cube.storm.util.lib.debug.Debug;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.subjects.BehaviorSubject;
@@ -21,14 +20,8 @@ import io.reactivex.subjects.Subject;
 import net.callumtaylor.asynchttp.AsyncHttpClient;
 import net.callumtaylor.asynchttp.response.JsonResponseHandler;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -246,7 +239,7 @@ public class DefaultUpdateManager implements UpdateManager
 		{
 			// download to temp file
 			File deltaDirectory = new File(ContentSettings.getInstance().getStoragePath() + "/delta");
-			deleteRecursive(deltaDirectory);
+			FileHelper.deleteRecursive(deltaDirectory);
 			deltaDirectory.mkdir();
 
 			apiClient = new AsyncHttpClient(endpoint);
@@ -275,12 +268,12 @@ public class DefaultUpdateManager implements UpdateManager
 
 						File path = new File(ContentSettings.getInstance().getStoragePath());
 
-						if (integrityCheck(getFilePath()))
+						if (BundleHelper.integrityCheck(getFilePath()))
 						{
 							observer.onNext(UpdateContentProgress.deploying());
 							// Move files from /delta to ../
-							copyDirectory(new File(getFilePath()), new File(ContentSettings.getInstance().getStoragePath()));
-							deleteRecursive(new File(getFilePath()));
+							FileHelper.copyDirectory(new File(getFilePath()), new File(ContentSettings.getInstance().getStoragePath()));
+							FileHelper.deleteRecursive(new File(getFilePath()));
 
 							File manifest = new File(path, Constants.FILE_MANIFEST);
 							JsonObject manifestJson = ContentSettings.getInstance().getFileManager().readFileAsJson(manifest).getAsJsonObject();
@@ -313,7 +306,7 @@ public class DefaultUpdateManager implements UpdateManager
 										}
 									}
 
-									removeFiles(path + "/" + key + "/", expectedContent.get(key));
+									FileHelper.removeFiles(path + "/" + key + "/", expectedContent.get(key));
 								}
 							}
 						}
@@ -386,128 +379,5 @@ public class DefaultUpdateManager implements UpdateManager
 	public Observable<UpdateContentRequest> updates()
 	{
 		return updates;
-	}
-
-	/**
-	 * Purges files in a folder that do not exist in the manifest
-	 *
-	 * @param folderPath The folder to check, can be either, {@link Constants#FOLDER_PAGES}, {@link Constants#FOLDER_LANGUAGES}, {@link Constants#FOLDER_CONTENT}, or {@link Constants#FOLDER_DATA}
-	 * @param fileList The list of files to delete
-	 */
-	public void removeFiles(String folderPath, String[] fileList)
-	{
-		if (fileList != null)
-		{
-			for (String s : fileList)
-			{
-				if (!TextUtils.isEmpty(s))
-				{
-					boolean deleted = new File(folderPath, s).delete();
-
-					if (!deleted)
-					{
-						Debug.out("%s was not deleted successfully", s);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Checks the integrity of each file currently stored in cache
-	 * <p/>
-	 * This method compares the file hash with the hash in the manifest. If the hashes do not match, the bundle is discarded.
-	 *
-	 * @return true if the bundle has the correct integrity, false if it was discarded
-	 */
-	public boolean integrityCheck(String contentPath)
-	{
-		boolean correct = true;
-
-		JsonObject manifest = new JsonParser().parse(ContentSettings.getInstance().getFileManager().readFileAsString(new File(contentPath, Constants.FILE_MANIFEST))).getAsJsonObject();
-
-		String[] sections = {"pages", "data", "content", "languages"};
-		String[] folders = {Constants.FOLDER_PAGES, Constants.FOLDER_DATA, Constants.FOLDER_CONTENT, Constants.FOLDER_LANGUAGES};
-
-		for (int index = 0; index < sections.length; index++)
-		{
-			JsonArray pages = manifest.get(sections[index]).getAsJsonArray();
-			for (JsonElement p : pages)
-			{
-				JsonObject page = p.getAsJsonObject();
-				String filename = page.get("src").getAsString();
-				String requiredHash = page.get("hash").getAsString();
-				String actualHash = ContentSettings.getInstance().getFileManager().getFileHash(contentPath + "/" + folders[index] + "/" + filename);
-
-				if (actualHash != null && !requiredHash.equals(actualHash))
-				{
-					correct = false;
-					Log.w("LightningContent", String.format("File %s has the wrong hash! Expected %s but got %s", filename, requiredHash, actualHash));
-					break;
-				}
-			}
-		}
-
-		if (!correct)
-		{
-			deleteRecursive(new File(contentPath));
-		}
-
-		return correct;
-	}
-
-	private void deleteRecursive(File fileOrDirectory)
-	{
-		if (fileOrDirectory.isDirectory())
-		{
-			File[] files = fileOrDirectory.listFiles();
-
-			if (files != null)
-			{
-				for (File child : files)
-				{
-					deleteRecursive(child);
-				}
-			}
-		}
-
-		fileOrDirectory.delete();
-	}
-
-	private void copyDirectory(File sourceLocation, File targetLocation) throws IOException
-	{
-		if (sourceLocation.isDirectory())
-		{
-			if (!targetLocation.exists())
-			{
-				targetLocation.mkdir();
-			}
-
-			String[] children = sourceLocation.list();
-
-			for (String aChildren : children)
-			{
-				copyDirectory(new File(sourceLocation, aChildren), new File(targetLocation, aChildren));
-			}
-		}
-		else
-		{
-			int buffer = 8192;
-
-			InputStream in = new BufferedInputStream(new FileInputStream(sourceLocation), buffer);
-			OutputStream out = new BufferedOutputStream(new FileOutputStream(targetLocation), buffer);
-
-			byte[] buf = new byte[buffer];
-			int len;
-
-			while ((len = in.read(buf)) > 0)
-			{
-				out.write(buf, 0, len);
-			}
-
-			in.close();
-			out.flush();
-			out.close();
-		}
 	}
 }

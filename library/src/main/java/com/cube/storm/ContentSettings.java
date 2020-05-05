@@ -1,15 +1,17 @@
 package com.cube.storm;
 
 import android.content.Context;
+import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.DownloadListener;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.manager.APIManager;
+import com.cube.storm.content.lib.manager.DefaultMigrationManager;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
+import com.cube.storm.content.lib.manager.MigrationManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
 import com.cube.storm.content.lib.resolver.CacheResolver;
@@ -94,6 +96,11 @@ public class ContentSettings
 	 * Default {@link com.cube.storm.content.lib.manager.UpdateManager} to use throughout the module
 	 */
 	@Getter @Setter private UpdateManager updateManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.manager.MigrationManager} to use throughout the module
+	 */
+	@Getter @Setter private MigrationManager migrationManager;
 
 	/**
 	 * The path to the storage folder on disk
@@ -191,6 +198,7 @@ public class ContentSettings
 
 			APIManager(new APIManager(){});
 			updateManager(new DefaultUpdateManager());
+			migrationManager(new DefaultMigrationManager());
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
@@ -366,6 +374,19 @@ public class ContentSettings
 		public Builder APIManager(@NonNull APIManager manager)
 		{
 			construct.apiManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default migration manager
+		 *
+		 * @param manager The new Migration manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder migrationManager(@NonNull MigrationManager manager)
+		{
+			construct.migrationManager = manager;
 			return this;
 		}
 
