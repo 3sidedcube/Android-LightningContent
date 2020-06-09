@@ -2,12 +2,12 @@ package com.cube.storm.content.lib.manager;
 
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
 import com.cube.storm.content.lib.helper.BundleHelper;
 import com.cube.storm.content.lib.helper.FileHelper;
-import com.cube.storm.content.lib.worker.ContentUpdateWorker;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
 import com.google.gson.JsonArray;
@@ -43,24 +43,20 @@ public class DefaultUpdateManager implements UpdateManager
 	 * Downloads the latest full bundle from the server
 	 */
 	@Override
-	public UpdateContentRequest checkForBundle()
+	public UpdateContentRequest checkForBundle(@Nullable Long buildTimestamp)
 	{
 		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			Long.toString(System.currentTimeMillis()),
-			ContentUpdateWorker.UpdateType.FULL_BUNDLE,
-			null,
-			observer
-		);
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.fullBundle(buildTimestamp, observer);
 		updates.onNext(updateContentRequest);
-		checkForBundle(observer);
+		checkForBundle(buildTimestamp, observer);
 		return updateContentRequest;
 	}
 
-	private void checkForBundle(Observer<UpdateContentProgress> observer)
+	private void checkForBundle(@Nullable Long buildTime, Observer<UpdateContentProgress> observer)
 	{
 		observer.onNext(UpdateContentProgress.checking());
-		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(new JsonResponseHandler()
+		long buildTimeParam = buildTime == null ? -1 : buildTime;
+		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(buildTimeParam, new JsonResponseHandler()
 		{
 			@Override public void onSuccess()
 			{
@@ -134,12 +130,7 @@ public class DefaultUpdateManager implements UpdateManager
 	public UpdateContentRequest checkForUpdates(final long lastUpdate)
 	{
 		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			Long.toString(System.currentTimeMillis()),
-			ContentUpdateWorker.UpdateType.DELTA,
-			lastUpdate,
-			observer
-		);
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdate(lastUpdate, observer);
 		updates.onNext(updateContentRequest);
 		checkForUpdates(lastUpdate, observer);
 		return updateContentRequest;
@@ -220,12 +211,7 @@ public class DefaultUpdateManager implements UpdateManager
 	public UpdateContentRequest downloadUpdates(@NonNull String endpoint)
 	{
 		Subject<UpdateContentProgress> observer = BehaviorSubject.create();
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			Long.toString(System.currentTimeMillis()),
-			ContentUpdateWorker.UpdateType.DIRECT_DOWNLOAD,
-			null,
-			observer
-		);
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.directDownload(observer);
 		updates.onNext(updateContentRequest);
 		downloadUpdates(endpoint, observer);
 		return updateContentRequest;

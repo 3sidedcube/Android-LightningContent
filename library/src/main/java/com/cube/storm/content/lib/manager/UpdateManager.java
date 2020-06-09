@@ -1,6 +1,7 @@
 package com.cube.storm.content.lib.manager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.cube.storm.content.lib.helper.BundleHelper;
 import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Observable;
@@ -15,14 +16,14 @@ public interface UpdateManager
 	void cancelPendingRequests();
 
 	/**
-	 * Downloads the latest full bundle from the server.
+	 * Downloads the latest full bundle from the server that is valid for an app built at the specified buildTime.
 	 * <p>
-	 * Ignores the timestamp in the local manifest file, so the downloaded bundle may be incompatible with the binary
-	 * if for example a landmark publish has occurred
+	 * This method will respect landmark publishes, and won't download bundles incompatible with a binary. Send in null
+	 * to retrieve the latest bundle, irrespective of landmark publishes.
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	UpdateContentRequest checkForBundle();
+	UpdateContentRequest checkForBundle(@Nullable Long buildTime);
 
 	/**
 	 * Checks for updates on the server and downloads any new files in the form of a delta bundle
@@ -31,13 +32,13 @@ public interface UpdateManager
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	default UpdateContentRequest checkForUpdates()
+	default UpdateContentRequest checkForUpdatesToLocalContent(@Nullable Long buildTime)
 	{
 		Long bundleTimestamp = BundleHelper.readContentTimestamp();
 
 		if (bundleTimestamp == null)
 		{
-			return checkForBundle();
+			return checkForBundle(buildTime);
 		}
 		else
 		{
