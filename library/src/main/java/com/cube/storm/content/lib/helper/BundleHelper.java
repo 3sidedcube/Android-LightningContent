@@ -33,6 +33,11 @@ public class BundleHelper
 		FileHelper.deleteRecursive(new File(path, "manifest.json"));
 	}
 
+	public static boolean hasContent()
+	{
+		return readContentTimestamp() != null;
+	}
+
 	/**
 	 * Checks the integrity of each file currently stored in cache
 	 * <p/>
