@@ -1,28 +1,32 @@
 package com.cube.storm;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
-
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.DownloadListener;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.manager.APIManager;
+import com.cube.storm.content.lib.manager.DefaultMigrationManager;
+import com.cube.storm.content.lib.manager.DefaultUpdateManager;
+import com.cube.storm.content.lib.manager.MigrationManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
+import com.cube.storm.content.lib.policy.PolicyEnforcingUpdateManager;
 import com.cube.storm.content.lib.parser.BundleBuilder;
+import com.cube.storm.content.lib.policy.PolicyManager;
+import com.cube.storm.content.lib.policy.SharedPreferencesPolicyManager;
 import com.cube.storm.content.lib.resolver.CacheResolver;
 import com.cube.storm.util.lib.manager.FileManager;
 import com.cube.storm.util.lib.resolver.AssetsResolver;
 import com.cube.storm.util.lib.resolver.FileResolver;
 import com.cube.storm.util.lib.resolver.Resolver;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * This is the entry point class of the library. To enable the use of the library, you must instantiate
@@ -82,11 +86,6 @@ public class ContentSettings
 	}
 
 	/**
-	 * Default private constructor
-	 */
-	private ContentSettings(){}
-
-	/**
 	 * Default {@link com.cube.storm.util.lib.manager.FileManager} to use throughout the module
 	 */
 	@Getter @Setter private FileManager fileManager;
@@ -100,6 +99,16 @@ public class ContentSettings
 	 * Default {@link com.cube.storm.content.lib.manager.UpdateManager} to use throughout the module
 	 */
 	@Getter @Setter private UpdateManager updateManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.manager.MigrationManager} to use throughout the module
+	 */
+	@Getter @Setter private MigrationManager migrationManager;
+
+	/**
+	 * Default {@link com.cube.storm.content.lib.policy.PolicyManager} to use throughout the module
+	 */
+	@Getter @Setter private PolicyManager policyManager;
 
 	/**
 	 * The path to the storage folder on disk
@@ -196,7 +205,9 @@ public class ContentSettings
 			this.context = context.getApplicationContext();
 
 			APIManager(new APIManager(){});
-			updateManager(new UpdateManager(){});
+			migrationManager(new DefaultMigrationManager());
+			policyManager(new SharedPreferencesPolicyManager(this.context));
+			updateManager(new PolicyEnforcingUpdateManager(new DefaultUpdateManager()));
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
@@ -372,6 +383,32 @@ public class ContentSettings
 		public Builder APIManager(@NonNull APIManager manager)
 		{
 			construct.apiManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default migration manager
+		 *
+		 * @param manager The new Migration manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder migrationManager(@NonNull MigrationManager manager)
+		{
+			construct.migrationManager = manager;
+			return this;
+		}
+
+		/**
+		 * Set the default policy manager
+		 *
+		 * @param manager The new policy manager
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder policyManager(@NonNull PolicyManager manager)
+		{
+			construct.policyManager = manager;
 			return this;
 		}
 

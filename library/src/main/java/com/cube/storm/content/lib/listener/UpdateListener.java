@@ -1,6 +1,6 @@
 package com.cube.storm.content.lib.listener;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import net.callumtaylor.asynchttp.obj.ConnectionInfo;
 
