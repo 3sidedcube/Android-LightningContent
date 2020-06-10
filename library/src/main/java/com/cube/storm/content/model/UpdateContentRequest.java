@@ -37,13 +37,10 @@ public class UpdateContentRequest
 		return new UpdateContentRequest(id, ContentUpdateWorker.UpdateType.FULL_BUNDLE, buildTimestamp, null, progress);
 	}
 
-	public static UpdateContentRequest deltaUpdateFromLocalContent(
-		@Nullable Long buildTimestamp,
-		@NonNull Observable<UpdateContentProgress> progress
-	)
+	public static UpdateContentRequest deltaUpdateFromLocalContent(@NonNull Observable<UpdateContentProgress> progress)
 	{
 		String id = generateId();
-		return new UpdateContentRequest(id, ContentUpdateWorker.UpdateType.DELTA, buildTimestamp, null, progress);
+		return new UpdateContentRequest(id, ContentUpdateWorker.UpdateType.DELTA, null, null, progress);
 	}
 
 	public static UpdateContentRequest directDownload(@NonNull Observable<UpdateContentProgress> progress)

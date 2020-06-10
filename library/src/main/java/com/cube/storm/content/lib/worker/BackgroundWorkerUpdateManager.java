@@ -147,7 +147,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 		log(String.format("Enqueuing update check (%s)", workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
-		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdateFromLocalContent(null, progressObservable);
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdateFromLocalContent(progressObservable);
 		updates.onNext(updateContentRequest);
 		return updateContentRequest;
 	}
