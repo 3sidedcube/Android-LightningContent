@@ -32,13 +32,13 @@ public interface UpdateManager
 	 * <p>
 	 * Despite the name this method will also download updates, not just check for them.
 	 */
-	default UpdateContentRequest checkForUpdatesToLocalContent(@Nullable Long buildTime)
+	default UpdateContentRequest checkForUpdatesToLocalContent()
 	{
 		Long bundleTimestamp = BundleHelper.readContentTimestamp();
 
 		if (bundleTimestamp == null)
 		{
-			return checkForBundle(buildTime);
+			throw new IllegalStateException("No bundle to update");
 		}
 		else
 		{

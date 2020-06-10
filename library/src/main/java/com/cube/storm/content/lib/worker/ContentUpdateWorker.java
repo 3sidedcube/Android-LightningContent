@@ -126,14 +126,7 @@ public class ContentUpdateWorker extends RxWorker
 			{
 				if (updateTimestamp == TIMESTAMP_UNINITIALIZED)
 				{
-					if (buildTimestamp == TIMESTAMP_UNINITIALIZED)
-					{
-						workJob = updateManager.checkForUpdatesToLocalContent(null);
-					}
-					else
-					{
-						workJob = updateManager.checkForUpdatesToLocalContent(buildTimestamp);
-					}
+					workJob = updateManager.checkForUpdatesToLocalContent();
 				}
 				else
 				{
