@@ -29,12 +29,13 @@ public class ContentUpdateWorker extends RxWorker
 	public static final String INPUT_KEY_UPDATE_MANAGER = "update_manager_impl";
 	public static final String INPUT_KEY_UPDATE_TYPE = "update_type";
 	public static final String INPUT_KEY_UPDATE_ENDPOINT = "update_endpoint";
+	public static final String INPUT_KEY_BUILD_TIMESTAMP = "build_timestamp";
 	public static final String INPUT_KEY_UPDATE_TIMESTAMP = "update_timestamp";
 
 	public static final String UPDATE_MANAGER_IMPL_DEFAULT = "update_manager_impl_default";
 	public static final String UPDATE_MANAGER_IMPL_WORKER = "update_manager_impl_worker";
 
-	private static final long UPDATE_TIMESTAMP_UNINITIALIZED = 0L;
+	private static final long TIMESTAMP_UNINITIALIZED = 0L;
 
 	public enum UpdateType
 	{
@@ -45,6 +46,7 @@ public class ContentUpdateWorker extends RxWorker
 
 	private UpdateManager updateManager;
 	private UpdateType updateType;
+	private long buildTimestamp;
 	private long updateTimestamp;
 	private String updateEndpoint;
 
@@ -57,8 +59,8 @@ public class ContentUpdateWorker extends RxWorker
 
 		updateType =
 			UpdateType.values()[workerParams.getInputData().getInt(INPUT_KEY_UPDATE_TYPE, UpdateType.DELTA.ordinal())];
-		updateTimestamp =
-			workerParams.getInputData().getLong(INPUT_KEY_UPDATE_TIMESTAMP, UPDATE_TIMESTAMP_UNINITIALIZED);
+		buildTimestamp = workerParams.getInputData().getLong(INPUT_KEY_BUILD_TIMESTAMP, TIMESTAMP_UNINITIALIZED);
+		updateTimestamp = workerParams.getInputData().getLong(INPUT_KEY_UPDATE_TIMESTAMP, TIMESTAMP_UNINITIALIZED);
 		updateEndpoint = workerParams.getInputData().getString(INPUT_KEY_UPDATE_ENDPOINT);
 
 		String workerImpl = workerParams.getInputData().getString(INPUT_KEY_UPDATE_MANAGER);
@@ -110,14 +112,21 @@ public class ContentUpdateWorker extends RxWorker
 		{
 			case FULL_BUNDLE:
 			{
-				workJob = updateManager.checkForBundle();
+				if (buildTimestamp == TIMESTAMP_UNINITIALIZED)
+				{
+					workJob = updateManager.checkForBundle(null);
+				}
+				else
+				{
+					workJob = updateManager.checkForBundle(buildTimestamp);
+				}
 				break;
 			}
 			case DELTA:
 			{
-				if (updateTimestamp == UPDATE_TIMESTAMP_UNINITIALIZED)
+				if (updateTimestamp == TIMESTAMP_UNINITIALIZED)
 				{
-					workJob = updateManager.checkForUpdates();
+					workJob = updateManager.checkForUpdatesToLocalContent();
 				}
 				else
 				{
