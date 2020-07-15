@@ -80,7 +80,7 @@ class StormPlugin implements Plugin<Project> {
 				String sanitisedUrl = mergedStormConfig.url.replaceAll("[\\\\/:*?\"<>|]", "_")
 				String archiveDownloadLocation = "${project.buildDir}/storm/${sanitisedUrl}/bundle.tar.gz"
 				String bundleUnpackDir = "${project.projectDir}/src/${variant.name}/assets"
-				String downloadTaskName = "stormDownload${mergedStormConfig.url.replaceAll("[\\\\/:*?\"<>|]", "_").capitalize()}"
+				String downloadTaskName = "stormDownload${sanitisedUrl.capitalize()}"
 
 				def downloadTask = project.tasks.findByName(downloadTaskName) ?: project.task(downloadTaskName, type: Download, dependsOn: mergedStormConfig.requiresAuth() ? authTask : null) {
 					/**
