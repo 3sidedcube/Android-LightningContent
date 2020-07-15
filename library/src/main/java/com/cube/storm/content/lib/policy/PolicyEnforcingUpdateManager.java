@@ -1,9 +1,9 @@
 package com.cube.storm.content.lib.policy;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.manager.UpdateManager;
-import com.cube.storm.content.lib.worker.ContentUpdateWorker;
 import com.cube.storm.content.model.UpdateContentRequest;
 import io.reactivex.Observable;
 
@@ -27,18 +27,13 @@ public class PolicyEnforcingUpdateManager implements UpdateManager
 	}
 
 	@Override
-	public UpdateContentRequest checkForBundle()
+	public UpdateContentRequest checkForBundle(@Nullable Long buildTimestamp)
 	{
 		if (!ContentSettings.getInstance().getPolicyManager().canUpdate())
 		{
-			return new UpdateContentRequest(
-				Long.toString(System.currentTimeMillis()),
-				ContentUpdateWorker.UpdateType.FULL_BUNDLE,
-				null,
-				Observable.error(new IllegalStateException("Not connected to wifi"))
-			);
+			return UpdateContentRequest.fullBundle(buildTimestamp, Observable.error(new IllegalStateException("Not connected to wifi")));
 		}
-		return delegate.checkForBundle();
+		return delegate.checkForBundle(buildTimestamp);
 	}
 
 	@Override
@@ -46,12 +41,7 @@ public class PolicyEnforcingUpdateManager implements UpdateManager
 	{
 		if (!ContentSettings.getInstance().getPolicyManager().canUpdate())
 		{
-			return new UpdateContentRequest(
-				Long.toString(System.currentTimeMillis()),
-				ContentUpdateWorker.UpdateType.DELTA,
-				lastUpdate,
-				Observable.error(new IllegalStateException("Not connected to wifi"))
-			);
+			return UpdateContentRequest.deltaUpdate(lastUpdate, Observable.error(new IllegalStateException("Not connected to wifi")));
 		}
 		return delegate.checkForUpdates(lastUpdate);
 	}
@@ -61,12 +51,7 @@ public class PolicyEnforcingUpdateManager implements UpdateManager
 	{
 		if (!ContentSettings.getInstance().getPolicyManager().canUpdate())
 		{
-			return new UpdateContentRequest(
-				Long.toString(System.currentTimeMillis()),
-				ContentUpdateWorker.UpdateType.DIRECT_DOWNLOAD,
-				null,
-				Observable.error(new IllegalStateException("Not connected to wifi"))
-			);
+			return UpdateContentRequest.directDownload(Observable.error(new IllegalStateException("Not connected to wifi")));
 		}
 		return delegate.downloadUpdates(endpoint);
 	}

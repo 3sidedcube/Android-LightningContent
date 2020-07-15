@@ -63,6 +63,7 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@NonNull
 	private static OneTimeWorkRequest createOneTimeWorkRequest(
 		@NonNull ContentUpdateWorker.UpdateType updateType,
+		@Nullable Long buildTimestamp,
 		@Nullable Long updateTimestamp,
 		@Nullable String updateEndpoint
 	)
@@ -74,16 +75,19 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 				                                ContentUpdateWorker.UPDATE_MANAGER_IMPL_DEFAULT
 			                                ).putInt(ContentUpdateWorker.INPUT_KEY_UPDATE_TYPE, updateType.ordinal());
 
+		if (buildTimestamp != null)
+		{
+			inputDataBuilder = inputDataBuilder.putLong(ContentUpdateWorker.INPUT_KEY_BUILD_TIMESTAMP, buildTimestamp);
+		}
+
 		if (updateTimestamp != null)
 		{
-			inputDataBuilder =
-				inputDataBuilder.putLong(ContentUpdateWorker.INPUT_KEY_UPDATE_TIMESTAMP, updateTimestamp);
+			inputDataBuilder = inputDataBuilder.putLong(ContentUpdateWorker.INPUT_KEY_UPDATE_TIMESTAMP, updateTimestamp);
 		}
 
 		if (updateEndpoint != null)
 		{
-			inputDataBuilder =
-				inputDataBuilder.putString(ContentUpdateWorker.INPUT_KEY_UPDATE_ENDPOINT, updateEndpoint);
+			inputDataBuilder = inputDataBuilder.putString(ContentUpdateWorker.INPUT_KEY_UPDATE_ENDPOINT, updateEndpoint);
 		}
 
 		Data inputData = inputDataBuilder.build();
@@ -125,33 +129,25 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	}
 
 	@Override
-	public UpdateContentRequest checkForBundle()
+	public UpdateContentRequest checkForBundle(@Nullable Long buildTimestamp)
 	{
-		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(FULL_BUNDLE, null, null);
+		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(FULL_BUNDLE, buildTimestamp, null, null);
 		log(String.format("Enqueuing bundle check (%s)", workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			workRequest.getId().toString(),
-			FULL_BUNDLE,
-			null,
-			createWorkObservable(workRequest.getId())
-		);
+		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.fullBundle(buildTimestamp, progressObservable);
 		updates.onNext(updateContentRequest);
 		return updateContentRequest;
 	}
 
 	@Override
-	public UpdateContentRequest checkForUpdates()
+	public UpdateContentRequest checkForUpdatesToLocalContent()
 	{
-		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, null, null);
+		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, null, null, null);
 		log(String.format("Enqueuing update check (%s)", workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			workRequest.getId().toString(),
-			DELTA,
-			null,
-			createWorkObservable(workRequest.getId())
-		);
+		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdateFromLocalContent(progressObservable);
 		updates.onNext(updateContentRequest);
 		return updateContentRequest;
 	}
@@ -159,15 +155,11 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@Override
 	public UpdateContentRequest checkForUpdates(long lastUpdate)
 	{
-		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, lastUpdate, null);
+		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, null, lastUpdate, null);
 		log(String.format("Enqueuing update check from %d (%s)", lastUpdate, workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			workRequest.getId().toString(),
-			DELTA,
-			lastUpdate,
-			createWorkObservable(workRequest.getId())
-		);
+		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdate(lastUpdate, progressObservable);
 		updates.onNext(updateContentRequest);
 		return updateContentRequest;
 	}
@@ -185,15 +177,11 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	@Override
 	public UpdateContentRequest downloadUpdates(@NonNull String endpoint)
 	{
-		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DIRECT_DOWNLOAD, null, endpoint);
+		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DIRECT_DOWNLOAD, null, null, endpoint);
 		log(String.format("Enqueuing download from %s (%s)", endpoint, workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.APPEND, workRequest);
-		UpdateContentRequest updateContentRequest = new UpdateContentRequest(
-			workRequest.getId().toString(),
-			DIRECT_DOWNLOAD,
-			null,
-			createWorkObservable(workRequest.getId())
-		);
+		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
+		UpdateContentRequest updateContentRequest = UpdateContentRequest.directDownload(progressObservable);
 		updates.onNext(updateContentRequest);
 		return updateContentRequest;
 	}
