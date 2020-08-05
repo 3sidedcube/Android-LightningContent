@@ -18,6 +18,9 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+project.sourceCompatibility = '1.8'
+project.targetCompatibility = '1.8'
+
 POM_NAME='LightningContentGradlePlugin'
 POM_ARTIFACT_ID='content-gradle-plugin'
 POM_PACKAGING='jar'
