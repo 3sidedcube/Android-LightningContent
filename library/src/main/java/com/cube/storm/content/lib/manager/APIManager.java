@@ -116,7 +116,8 @@ public abstract class APIManager
 			throw new Error("App ID set in ContentSettings$appId is an incorrect format");
 		}
 
-		String urlPart = String.format(Constants.API_BUNDLE, appId, ContentSettings.getInstance().getContentEnvironment().getEnvironmentLabel());
+		String endpoint = lastUpdate > -1 ? Constants.API_LANDMARK_BUNDLE : Constants.API_BUNDLE;
+		String urlPart = String.format(endpoint, appId, ContentSettings.getInstance().getContentEnvironment().getEnvironmentLabel());
 
 		if (lastUpdate > -1)
 		{
