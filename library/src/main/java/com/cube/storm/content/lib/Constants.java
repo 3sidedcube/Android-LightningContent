@@ -4,7 +4,10 @@ public class Constants
 {
 	// Storm content endpoints
 	public static final String API_CONTENT_UPDATE = "apps/%s/update?timestamp=%s&environment=%s";
-	public static final String API_BUNDLE = "apps/%s/bundle?&environment=%s";
+	public static final String API_BUNDLE = "apps/%s/bundle?environment=%s";
+
+	// Endpoint added in 2020 because /bundle endpoint was not landmark-aware
+	public static final String API_LANDMARK_BUNDLE = "apps/%s/landmark_bundle?environment=%s";
 
 	// Storm URI protocols
 	public static final String URI_CACHE = "cache";
