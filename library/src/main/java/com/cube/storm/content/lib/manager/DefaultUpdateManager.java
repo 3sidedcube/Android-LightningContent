@@ -55,6 +55,7 @@ public class DefaultUpdateManager implements UpdateManager
 	private void checkForBundle(@Nullable Long buildTime, Observer<UpdateContentProgress> observer)
 	{
 		observer.onNext(UpdateContentProgress.checking());
+
 		long buildTimeParam = buildTime == null ? -1 : buildTime;
 		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(buildTimeParam, new JsonResponseHandler()
 		{
@@ -296,6 +297,7 @@ public class DefaultUpdateManager implements UpdateManager
 								}
 							}
 						}
+						observer.onComplete();
 					}
 					catch (Exception e)
 					{
@@ -324,7 +326,6 @@ public class DefaultUpdateManager implements UpdateManager
 
 					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
 					{
-						observer.onComplete();
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
@@ -332,7 +333,6 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					else
 					{
-						observer.onError(new IllegalStateException("Unexpected response when downloading bundle: " + getConnectionInfo().toString()));
 						if (ContentSettings.getInstance().getUpdateListener() != null)
 						{
 							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(0, getConnectionInfo());
