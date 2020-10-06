@@ -9,7 +9,6 @@ buildscript {
 
 plugins {
 	id 'com.android.application'
-	id 'io.franzbecker.gradle-lombok' version '1.14'
 }
 
 apply plugin: 'com.cube.storm.content'
@@ -71,6 +70,6 @@ dependencies {
 	implementation 'com.3sidedcube.storm:util:1.0.0'
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 
-	compileOnly 'org.projectlombok:lombok:1.18.2'
-	annotationProcessor 'org.projectlombok:lombok:1.18.2'
+	compileOnly 'org.projectlombok:lombok:1.18.12'
+	annotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
