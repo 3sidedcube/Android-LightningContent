@@ -1,3 +1,5 @@
+import com.cube.storm.content.BundleDownloadStrategy
+
 buildscript {
 	repositories {
 		maven { url "http://oss.3sidedcube.com:8081/artifactory/internal" }
@@ -44,7 +46,7 @@ android {
 			appId = "1"
 			bundleEnvironment = "live"
 			bundleTimestamp = null
-			bundleDownloadStrategy = com.cube.storm.content.BundleDownloadStrategy.IF_MISSING
+			bundleDownloadStrategy = BundleDownloadStrategy.IF_MISSING
 			authUsername = ""
 			authPassword = ""
 		}
@@ -66,7 +68,7 @@ dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation project(':library')
 
-	implementation 'androidx.appcompat:appcompat:1.1.0'
+	implementation 'androidx.appcompat:appcompat:1.2.0'
 	implementation 'com.3sidedcube.storm:util:1.0.0'
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 
