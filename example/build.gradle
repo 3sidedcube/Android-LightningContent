@@ -2,10 +2,13 @@ import com.cube.storm.content.BundleDownloadStrategy
 
 buildscript {
 	repositories {
-		maven { url "http://oss.3sidedcube.com:8081/artifactory/internal" }
+		maven {
+			url "http://oss.3sidedcube.com:8081/artifactory/internal"
+			allowInsecureProtocol = true
+		}
 	}
 	dependencies {
-		classpath 'com.3sidedcube.storm:content-gradle-plugin:+'
+		classpath 'com.3sidedcube.storm:content-gradle-plugin:1.0.4'
 	}
 }
 
