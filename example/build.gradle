@@ -8,7 +8,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		classpath 'com.3sidedcube.storm:content-gradle-plugin:1.0.4'
+		classpath 'com.3sidedcube.storm:content-gradle-plugin:1.0.5'
 	}
 }
 

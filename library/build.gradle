@@ -24,9 +24,9 @@ android {
 }
 
 dependencies {
-	implementation 'androidx.annotation:annotation:1.1.0'
-	implementation 'androidx.work:work-runtime:2.4.0'
-	implementation 'androidx.work:work-rxjava2:2.4.0'
+	implementation 'androidx.annotation:annotation:1.3.0'
+	implementation 'androidx.work:work-runtime:2.7.0'
+	implementation 'androidx.work:work-rxjava2:2.7.0'
 
 	implementation 'com.3sidedcube.storm:util:1.1.0-SNAPSHOT'
 
@@ -42,5 +42,69 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
 
-//apply from: '../gradle/sonatype.gradle'
-apply from: '../gradle/artifactory.gradle'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+allprojects {
+	tasks.withType(Javadoc) {
+		options.addStringOption('Xdoclint:none', '-quiet')
+	}
+}
+
+ext.ARTIFACTORY_USERNAME = properties.get('ARTIFACTORY_USERNAME', '')
+ext.ARTIFACTORY_PASSWORD = properties.get('ARTIFACTORY_PASSWORD', '')
+
+afterEvaluate { project ->
+	publishing {
+		publications {
+			mavenJava(MavenPublication) {
+				from components.release
+				groupId = GROUP
+				artifactId = POM_ARTIFACT_ID
+				version = VERSION_NAME
+
+				pom {
+					name = POM_NAME
+					packaging = POM_PACKAGING
+					description = POM_DESCRIPTION
+					url = POM_URL
+
+					scm {
+						url = POM_SCM_URL
+						connection = POM_SCM_CONNECTION
+						developerConnection = POM_SCM_DEV_CONNECTION
+					}
+
+					licenses {
+						license {
+							name = POM_LICENSE_NAME
+							url = POM_LICENSE_URL
+							distribution = 'repo'
+						}
+					}
+
+					developers {
+						developer {
+							id = POM_DEVELOPER_ID
+							name = POM_DEVELOPER_NAME
+						}
+					}
+				}
+			}
+		}
+		repositories {
+			maven {
+				url = "http://oss.3sidedcube.com:8081/artifactory/internal"
+				allowInsecureProtocol = true
+				credentials {
+					username = ARTIFACTORY_USERNAME
+					password = ARTIFACTORY_PASSWORD
+				}
+			}
+		}
+	}
+
+	signing {
+		sign publishing.publications.mavenJava
+	}
+}

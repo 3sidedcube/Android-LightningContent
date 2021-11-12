@@ -1,6 +1,7 @@
 plugins {
     id 'groovy'
-	id "de.undercouch.download" version "3.4.3"
+    id 'java-library'
+	id "de.undercouch.download" version "4.1.2"
 }
 
 dependencies {
@@ -13,10 +14,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'de.undercouch:gradle-download-task:3.4.3'
+    implementation 'de.undercouch:gradle-download-task:4.1.2'
     implementation 'io.github.http-builder-ng:http-builder-ng-core:1.0.3'
     implementation 'org.apache.httpcomponents:httpclient:4.5.6'
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 project.sourceCompatibility = '1.8'
@@ -25,6 +26,76 @@ project.targetCompatibility = '1.8'
 POM_NAME='LightningContentGradlePlugin'
 POM_ARTIFACT_ID='content-gradle-plugin'
 POM_PACKAGING='jar'
-VERSION_NAME="1.0.4"
+VERSION_NAME="1.0.5"
 
-apply from: '../gradle/artifactory.gradle'
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+allprojects {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+ext.ARTIFACTORY_USERNAME = properties.get('ARTIFACTORY_USERNAME', '')
+ext.ARTIFACTORY_PASSWORD = properties.get('ARTIFACTORY_PASSWORD', '')
+
+afterEvaluate { project ->
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                groupId = GROUP
+                artifactId = POM_ARTIFACT_ID
+                version = VERSION_NAME
+
+                pom {
+                    name = POM_NAME
+                    packaging = POM_PACKAGING
+                    description = POM_DESCRIPTION
+                    url = POM_URL
+
+                    scm {
+                        url = POM_SCM_URL
+                        connection = POM_SCM_CONNECTION
+                        developerConnection = POM_SCM_DEV_CONNECTION
+                    }
+
+                    licenses {
+                        license {
+                            name = POM_LICENSE_NAME
+                            url = POM_LICENSE_URL
+                            distribution = 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = POM_DEVELOPER_ID
+                            name = POM_DEVELOPER_NAME
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                url = "http://oss.3sidedcube.com:8081/artifactory/internal"
+                allowInsecureProtocol = true
+                credentials {
+                    username = ARTIFACTORY_USERNAME
+                    password = ARTIFACTORY_PASSWORD
+                }
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
+    }
+}
