@@ -6,7 +6,7 @@
 		android:name=".ExampleApplication"
 		android:allowBackup="false"
 	>
-		<activity android:name=".ExampleActivity">
+		<activity android:name=".ExampleActivity" android:exported="true">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
