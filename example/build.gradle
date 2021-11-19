@@ -60,10 +60,8 @@ android {
 		targetCompatibility JavaVersion.VERSION_1_8
 	}
 
-	android {
-		lintOptions {
-			abortOnError false
-		}
+	lintOptions {
+		abortOnError false
 	}
 }
 
@@ -71,10 +69,9 @@ dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation project(':library')
 
-	implementation 'androidx.appcompat:appcompat:1.2.0'
-	implementation 'com.3sidedcube.storm:util:1.0.0'
+	implementation 'androidx.appcompat:appcompat:1.4.0'
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 
-	compileOnly 'org.projectlombok:lombok:1.18.12'
-	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+	compileOnly 'org.projectlombok:lombok:1.18.16'
+	annotationProcessor 'org.projectlombok:lombok:1.18.16'
 }

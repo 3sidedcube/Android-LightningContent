@@ -1,7 +1,9 @@
 package com.cube.storm.content.lib.helper;
 
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
+
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.model.Manifest;
@@ -9,9 +11,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import timber.log.Timber;
 
 import java.io.File;
+
+import timber.log.Timber;
 
 /**
  * Utility methods relating to Storm content bundles and their contents
@@ -48,8 +51,14 @@ public class BundleHelper
 	public static boolean integrityCheck(String contentPath)
 	{
 		boolean correct = true;
-
-		JsonObject manifest = new JsonParser().parse(ContentSettings.getInstance().getFileManager().readFileAsString(new File(contentPath, Constants.FILE_MANIFEST))).getAsJsonObject();
+		File manifestFile = new File(contentPath, Constants.FILE_MANIFEST);
+		String contentManifest = ContentSettings.getInstance().getFileManager().readFileAsString(manifestFile);
+		if(TextUtils.isEmpty(contentManifest))
+		{
+			return false;
+		}
+		
+		JsonObject manifest =  JsonParser.parseString(contentManifest).getAsJsonObject();
 
 		String[] sections = {"pages", "data", "content", "languages"};
 		String[] folders = {Constants.FOLDER_PAGES, Constants.FOLDER_DATA, Constants.FOLDER_CONTENT, Constants.FOLDER_LANGUAGES};
