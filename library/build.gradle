@@ -25,10 +25,10 @@ android {
 
 dependencies {
 	implementation 'androidx.annotation:annotation:1.3.0'
-	implementation 'androidx.work:work-runtime:2.7.0'
-	implementation 'androidx.work:work-rxjava2:2.7.0'
+	implementation 'androidx.work:work-runtime:2.7.1'
+	implementation 'androidx.work:work-rxjava2:2.7.1'
 
-	implementation 'com.3sidedcube.storm:util:1.1.0-SNAPSHOT'
+	implementation 'com.3sidedcube.storm:util:1.1.2'
 
 	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 	implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
@@ -38,8 +38,8 @@ dependencies {
 	implementation 'org.kamranzafar:jtar:2.3'
 	implementation 'com.jakewharton.timber:timber:4.7.1'
 
-	compileOnly 'org.projectlombok:lombok:1.18.12'
-	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+	compileOnly 'org.projectlombok:lombok:1.18.16'
+	annotationProcessor 'org.projectlombok:lombok:1.18.16'
 }
 
 apply plugin: 'maven-publish'
