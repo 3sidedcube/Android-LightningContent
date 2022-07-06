@@ -13,6 +13,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -114,5 +116,43 @@ public class BundleHelper
 		}
 
 		return manifest.getTimestamp();
+	}
+	
+	public static void deleteUnexpectedFiles(File path)
+	{
+		File manifest = new File(path, Constants.FILE_MANIFEST);
+		JsonObject manifestJson = ContentSettings.getInstance().getFileManager().readFileAsJson(manifest).getAsJsonObject();
+		
+		// Create map of expected data
+		Map <String, String[]> expectedContent = new HashMap <String, String[]>();
+		expectedContent.put("pages", new File(path + "/" + Constants.FOLDER_PAGES + "/").list());
+		expectedContent.put("languages", new File(path + "/" + Constants.FOLDER_LANGUAGES + "/").list());
+		expectedContent.put("content", new File(path + "/" + Constants.FOLDER_CONTENT + "/").list());
+		expectedContent.put("data", new File(path + "/" + Constants.FOLDER_DATA + "/").list());
+		
+		for (String key : expectedContent.keySet())
+		{
+			if (manifestJson.has(key))
+			{
+				JsonArray pagesList = manifestJson.get(key).getAsJsonArray();
+				
+				for (JsonElement e : pagesList)
+				{
+					String filename = e.getAsJsonObject().get("src").getAsString();
+					
+					int size = expectedContent.get(key) == null ? 0 : expectedContent.get(key).length;
+					for (int index = 0; index < size; index++)
+					{
+						if (expectedContent.get(key)[index] != null && expectedContent.get(key)[index].equals(filename))
+						{
+							expectedContent.get(key)[index] = null;
+							break;
+						}
+					}
+				}
+				
+				FileHelper.removeFiles(path + "/" + key + "/", expectedContent.get(key));
+			}
+		}
 	}
 }
