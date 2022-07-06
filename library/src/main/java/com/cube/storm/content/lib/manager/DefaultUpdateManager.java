@@ -255,13 +255,15 @@ public class DefaultUpdateManager implements UpdateManager
 
 						File path = new File(ContentSettings.getInstance().getStoragePath());
 
-						if (BundleHelper.integrityCheck(getFilePath()))
+						// Check the integrity of the unpacked bundle
+						if (ContentSettings.getInstance().getBundleIntegrityManager().integrityCheck(getFilePath()))
 						{
 							observer.onNext(UpdateContentProgress.deploying());
 							// Move files from /delta to ../
 							FileHelper.copyDirectory(new File(getFilePath()), path);
 							FileHelper.deleteRecursive(new File(getFilePath()));
-							BundleHelper.deleteUnexpectedFiles(path);
+							// Enforce the integrity of the deployed directory
+							ContentSettings.getInstance().getBundleIntegrityManager().enforceIntegrityAfterDeployment(path);
 						}
 						observer.onComplete();
 					}
