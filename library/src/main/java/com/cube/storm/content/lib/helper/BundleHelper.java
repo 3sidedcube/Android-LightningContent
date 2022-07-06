@@ -11,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
 import java.util.HashMap;
@@ -118,6 +119,13 @@ public class BundleHelper
 		return manifest.getTimestamp();
 	}
 	
+	/**
+	 * Remove any files from a bundle directory that are inside the expected folders of the bundle but are not found in the bundle manifest
+	 *
+	 * @param path The filepath to the bundle directory
+	 * @throws JsonSyntaxException if the bundle directory doesn't contain a parseable manifest
+	 * @throws IllegalStateException if the manifest in the bundle directory isn't formatted how it is expected to be
+	 */
 	public static void deleteUnexpectedFiles(File path)
 	{
 		File manifest = new File(path, Constants.FILE_MANIFEST);
