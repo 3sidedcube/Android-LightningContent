@@ -11,8 +11,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -114,5 +117,64 @@ public class BundleHelper
 		}
 
 		return manifest.getTimestamp();
+	}
+	
+	/**
+	 * Remove any files from a bundle directory that are inside the expected folders of the bundle but are not found in the bundle manifest
+	 *
+	 * @param path The filepath to the bundle directory
+	 * @throws JsonSyntaxException if the bundle directory doesn't contain a parseable manifest
+	 * @throws IllegalStateException if the manifest in the bundle directory isn't formatted how it is expected to be
+	 */
+	public static void deleteUnexpectedFiles(File path)
+	{
+		File manifest = new File(path, Constants.FILE_MANIFEST);
+		JsonObject manifestJson = ContentSettings.getInstance().getFileManager().readFileAsJson(manifest).getAsJsonObject();
+		
+		// Map of folder directories
+		Map <String, String> folderDirectories = new HashMap <>();
+		folderDirectories.put("pages", Constants.FOLDER_PAGES);
+		folderDirectories.put("languages", Constants.FOLDER_LANGUAGES);
+		folderDirectories.put("content", Constants.FOLDER_CONTENT);
+		folderDirectories.put("data", Constants.FOLDER_DATA);
+		
+		// Create map of expected data
+		Map <String, String[]> expectedContent = new HashMap <>();
+		for (Map.Entry<String, String> entry : folderDirectories.entrySet())
+		{
+			expectedContent.put(entry.getKey(), new File(path + "/" + entry.getValue() + "/").list());
+		}
+		
+		for (Map.Entry<String, String[]> entry : expectedContent.entrySet())
+		{
+			String key = entry.getKey();
+			if(!manifestJson.has(key))
+			{
+				continue;
+			}
+			String[] filePaths = entry.getValue();
+			if(filePaths == null)
+			{
+				continue;
+			}
+			JsonArray pagesList = manifestJson.get(key).getAsJsonArray();
+			
+			for (JsonElement e : pagesList)
+			{
+				String filename = e.getAsJsonObject().get("src").getAsString();
+				
+				int size = filePaths.length;
+				for (int index = 0; index < size; index++)
+				{
+					if (filePaths[index] != null && filePaths[index].equals(filename))
+					{
+						filePaths[index] = null;
+						break;
+					}
+				}
+			}
+			
+			FileHelper.removeFiles(path + "/" + folderDirectories.get(key) + "/", filePaths);
+		}
 	}
 }

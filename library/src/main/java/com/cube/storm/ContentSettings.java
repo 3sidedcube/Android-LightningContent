@@ -9,8 +9,10 @@ import com.cube.storm.content.lib.factory.FileFactory;
 import com.cube.storm.content.lib.listener.DownloadListener;
 import com.cube.storm.content.lib.listener.UpdateListener;
 import com.cube.storm.content.lib.manager.APIManager;
+import com.cube.storm.content.lib.manager.BundleIntegrityManager;
 import com.cube.storm.content.lib.manager.DefaultMigrationManager;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
+import com.cube.storm.content.lib.manager.LegacyBundleIntegrityManager;
 import com.cube.storm.content.lib.manager.MigrationManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.lib.policy.PolicyEnforcingUpdateManager;
@@ -94,6 +96,11 @@ public class ContentSettings
 	 * Default {@link com.cube.storm.content.lib.manager.APIManager} to use throughout the module
 	 */
 	@Getter @Setter private APIManager apiManager;
+	
+	/**
+	 * Default {@link BundleIntegrityManager} to use throughout the module
+	 */
+	@Getter @Setter private BundleIntegrityManager bundleIntegrityManager;
 
 	/**
 	 * Default {@link com.cube.storm.content.lib.manager.UpdateManager} to use throughout the module
@@ -208,6 +215,7 @@ public class ContentSettings
 			migrationManager(new DefaultMigrationManager());
 			policyManager(new SharedPreferencesPolicyManager(this.context));
 			updateManager(new PolicyEnforcingUpdateManager(new DefaultUpdateManager()));
+			bundleIntegrityManager(new LegacyBundleIntegrityManager());
 
 			fileFactory(new FileFactory(){});
 			bundleBuilder(new BundleBuilder(){});
@@ -409,6 +417,17 @@ public class ContentSettings
 		public Builder policyManager(@NonNull PolicyManager manager)
 		{
 			construct.policyManager = manager;
+			return this;
+		}
+		
+		/**
+		 * Set the default {@link BundleIntegrityManager}
+		 * @param manager The new {@link BundleIntegrityManager} to use to validate and ensure integrity of bundles
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder bundleIntegrityManager(@NonNull BundleIntegrityManager manager)
+		{
+			construct.bundleIntegrityManager = manager;
 			return this;
 		}
 
