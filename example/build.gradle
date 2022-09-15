@@ -69,8 +69,8 @@ dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation project(':library')
 
-	implementation 'androidx.appcompat:appcompat:1.4.0'
-	implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
+	implementation 'androidx.appcompat:appcompat:1.5.1'
+	implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
 
 	compileOnly 'org.projectlombok:lombok:1.18.16'
 	annotationProcessor 'org.projectlombok:lombok:1.18.16'
