@@ -1,9 +1,10 @@
 package com.cube.storm.content.lib.worker;
 
+import com.cube.storm.content.model.UpdateContentProgress;
+
 import androidx.lifecycle.LiveData;
 import androidx.work.Data;
 import androidx.work.WorkInfo;
-import com.cube.storm.content.model.UpdateContentProgress;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 import lombok.Getter;
@@ -31,6 +32,11 @@ class BackgroundWorkerObserver implements androidx.lifecycle.Observer<WorkInfo>
 	@Override
 	public void onChanged(WorkInfo workInfo)
 	{
+		if(workInfo == null)
+		{
+			return;
+		}
+		
 		switch (workInfo.getState())
 		{
 			case ENQUEUED:
