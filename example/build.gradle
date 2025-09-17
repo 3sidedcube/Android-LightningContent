@@ -8,7 +8,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		classpath 'com.3sidedcube.storm:content-gradle-plugin:1.0.5'
+		classpath 'com.3sidedcube.storm:content-gradle-plugin:1.0.6'
 	}
 }
 
@@ -43,10 +43,10 @@ android {
 		 */
 		storm {
 			apiBase = "https://arc.cubeapis.com"
-			apiVersion = "v1.5"
+			apiVersion = "latest"
 			orgName = "ARC_STORM"
 			orgId = "1"
-			appId = "1"
+			appId = "3"
 			bundleEnvironment = "live"
 			bundleTimestamp = null
 			bundleDownloadStrategy = BundleDownloadStrategy.IF_MISSING
@@ -56,22 +56,24 @@ android {
 	}
 
 	compileOptions {
-		sourceCompatibility JavaVersion.VERSION_1_8
-		targetCompatibility JavaVersion.VERSION_1_8
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
 	}
 
 	lintOptions {
 		abortOnError false
 	}
+
+	namespace 'com.cube.storm.ui.example'
 }
 
 dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation project(':library')
 
-	implementation 'androidx.appcompat:appcompat:1.5.1'
-	implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
+	implementation 'androidx.appcompat:appcompat:1.7.1'
+	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 
-	compileOnly 'org.projectlombok:lombok:1.18.16'
-	annotationProcessor 'org.projectlombok:lombok:1.18.16'
+	compileOnly 'org.projectlombok:lombok:1.18.40'
+	annotationProcessor 'org.projectlombok:lombok:1.18.40'
 }

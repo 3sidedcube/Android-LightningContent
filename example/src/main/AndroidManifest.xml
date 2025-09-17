@@ -1,12 +1,10 @@
 <manifest
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.cube.storm.ui.example"
->
+	xmlns:android="http://schemas.android.com/apk/res/android">
 	<application
-		android:name=".ExampleApplication"
+		android:name="com.cube.storm.ui.example.ExampleApplication"
 		android:allowBackup="false"
 	>
-		<activity android:name=".ExampleActivity" android:exported="true">
+		<activity android:name="com.cube.storm.ui.example.ExampleActivity" android:exported="true">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
