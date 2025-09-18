@@ -53,6 +53,10 @@ android {
 			authUsername = ""
 			authPassword = ""
 		}
+
+		buildFeatures {
+			buildConfig = true
+		}
 	}
 
 	compileOptions {
