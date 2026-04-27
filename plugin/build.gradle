@@ -39,8 +39,9 @@ allprojects {
     }
 }
 
-ext.ARTIFACTORY_USERNAME = properties.get('ARTIFACTORY_USERNAME', '')
-ext.ARTIFACTORY_PASSWORD = properties.get('ARTIFACTORY_PASSWORD', '')
+ext.PUBLISHING_URL = properties.get('ANDROID_INTERNAL_PUBLISHING_URL', '')
+ext.PUBLISHING_USERNAME = properties.get('ANDROID_INTERNAL_PUBLISHING_USERNAME', '')
+ext.PUBLISHING_PASSWORD = properties.get('ANDROID_INTERNAL_PUBLISHING_PASSWORD', '')
 
 afterEvaluate { project ->
     publishing {
@@ -82,11 +83,11 @@ afterEvaluate { project ->
         }
         repositories {
             maven {
-                url = "http://oss.3sidedcube.com:8081/artifactory/internal"
+                url = PUBLISHING_URL
                 allowInsecureProtocol = true
                 credentials {
-                    username = ARTIFACTORY_USERNAME
-                    password = ARTIFACTORY_PASSWORD
+                    username = PUBLISHING_USERNAME
+                    password = PUBLISHING_PASSWORD
                 }
             }
         }
