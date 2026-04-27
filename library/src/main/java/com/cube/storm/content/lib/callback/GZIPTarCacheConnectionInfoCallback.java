@@ -32,7 +32,7 @@ public abstract class GZIPTarCacheConnectionInfoCallback extends FileCacheCallba
 
 	public GZIPTarCacheConnectionInfoCallback(String filePath)
 	{
-		super(filePath);
+		super(filePath + "/bundle.tar");
 		this.filePath = filePath;
 	}
 
