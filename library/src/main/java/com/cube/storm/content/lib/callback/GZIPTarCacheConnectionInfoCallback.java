@@ -2,7 +2,7 @@ package com.cube.storm.content.lib.callback;
 
 import androidx.annotation.NonNull;
 
-import net.callumtaylor.asynchttp.obj.ConnectionInfo;
+import com.cube.storm.content.lib.model.ConnectionInfo;
 
 import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarInputStream;

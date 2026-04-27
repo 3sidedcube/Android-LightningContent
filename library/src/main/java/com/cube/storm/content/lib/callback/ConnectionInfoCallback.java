@@ -3,8 +3,8 @@ package com.cube.storm.content.lib.callback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.callumtaylor.asynchttp.obj.ConnectionInfo;
-import net.callumtaylor.asynchttp.obj.RequestMode;
+
+import com.cube.storm.content.lib.model.ConnectionInfo;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public abstract class ConnectionInfoCallback implements Callback {
 	{
 		ConnectionInfo connectionInfo = new ConnectionInfo();
 		connectionInfo.connectionUrl = call.request().url().toString();
-		connectionInfo.requestMethod = RequestMode.valueOf(call.request().method());
+		connectionInfo.requestMethod = call.request().method();
 		connectionInfo.requestHeaders = call.request().headers();
 		if (response != null)
 		{

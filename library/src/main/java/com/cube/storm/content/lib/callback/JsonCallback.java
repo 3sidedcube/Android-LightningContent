@@ -2,10 +2,9 @@ package com.cube.storm.content.lib.callback;
 
 import androidx.annotation.NonNull;
 
+import com.cube.storm.content.lib.model.ConnectionInfo;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-
-import net.callumtaylor.asynchttp.obj.ConnectionInfo;
 
 import java.io.IOException;
 

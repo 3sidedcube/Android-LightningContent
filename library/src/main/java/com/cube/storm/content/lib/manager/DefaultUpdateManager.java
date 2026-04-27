@@ -7,6 +7,7 @@ import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.callback.GZIPTarCacheConnectionInfoCallback;
 import com.cube.storm.content.lib.callback.JsonCallback;
 import com.cube.storm.content.lib.helper.FileHelper;
+import com.cube.storm.content.lib.model.ConnectionInfo;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
 import com.google.gson.JsonElement;
@@ -19,8 +20,6 @@ import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import net.callumtaylor.asynchttp.obj.ConnectionInfo;
 
 import java.io.File;
 import java.io.IOException;
