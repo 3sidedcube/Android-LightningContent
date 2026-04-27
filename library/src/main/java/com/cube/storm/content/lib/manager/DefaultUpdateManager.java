@@ -4,26 +4,25 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
-import com.cube.storm.content.lib.Constants;
+import com.cube.storm.content.lib.callback.JsonCallback;
 import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
-import com.cube.storm.content.lib.helper.BundleHelper;
 import com.cube.storm.content.lib.helper.FileHelper;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
+import okhttp3.Call;
+import okhttp3.Response;
+
 import net.callumtaylor.asynchttp.AsyncHttpClient;
-import net.callumtaylor.asynchttp.response.JsonResponseHandler;
+import net.callumtaylor.asynchttp.obj.ConnectionInfo;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -36,6 +35,7 @@ import java.util.Map;
 public class DefaultUpdateManager implements UpdateManager
 {
 	private AsyncHttpClient apiClient;
+	private Call apiCall;
 
 	private Subject<UpdateContentRequest> updates = BehaviorSubject.create();
 
@@ -57,27 +57,28 @@ public class DefaultUpdateManager implements UpdateManager
 		observer.onNext(UpdateContentProgress.checking());
 
 		long buildTimeParam = buildTime == null ? -1 : buildTime;
-		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(buildTimeParam, new JsonResponseHandler()
+		apiCall = ContentSettings.getInstance().getApiManager().checkForBundle(buildTimeParam, new JsonCallback()
 		{
-			@Override public void onSuccess()
+			@Override public void onSuccess(@NonNull Call call, @NonNull Response response, @NonNull ConnectionInfo connectionInfo) throws IOException
 			{
-				apiClient = null;
+				super.onSuccess(call, response, connectionInfo);
+				apiCall = null;
 
 				boolean toDownload = false;
 
-				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
+				if (connectionInfo.responseCode < 300 && connectionInfo.responseCode >= 200)
 				{
 					try
 					{
-						if (getConnectionInfo().responseCode == 200)
+						if (connectionInfo.responseCode == 200)
 						{
-							JsonElement response = getContent();
+							JsonElement jsonResponse = getContent();
 
-							if (response != null && response.isJsonObject())
+							if (jsonResponse != null && jsonResponse.isJsonObject())
 							{
-								if (response.getAsJsonObject().has("file"))
+								if (jsonResponse.getAsJsonObject().has("file"))
 								{
-									String endpoint = response.getAsJsonObject().get("file").getAsString();
+									String endpoint = jsonResponse.getAsJsonObject().get("file").getAsString();
 									downloadUpdates(endpoint, observer);
 									toDownload = true;
 								}
@@ -86,14 +87,14 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
+						// e.printStackTrace();
 					}
 				}
-				else if (getConnectionInfo().responseCode == 303)
+				else if (connectionInfo.responseCode == 303)
 				{
-					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
+					if (!TextUtils.isEmpty(connectionInfo.responseHeaders.get("Location")))
 					{
-						String location = getConnectionInfo().responseHeaders.get("Location");
+						String location = connectionInfo.responseHeaders.get("Location");
 						downloadUpdates(location, observer);
 						toDownload = true;
 					}
@@ -110,13 +111,13 @@ public class DefaultUpdateManager implements UpdateManager
 				}
 			}
 
-			@Override public void onFailure()
+			@Override public void onFailure(@NonNull Call call, @Nullable IOException e, @NonNull ConnectionInfo connectionInfo)
 			{
-				observer.onError(new IOException("Unexpected response when checking for bundle: " + getConnectionInfo().toString()));
+				observer.onError(new IOException("Unexpected response when checking for bundle: " + connectionInfo));
 
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
-					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(connectionInfo);
 				}
 			}
 		});
@@ -140,27 +141,29 @@ public class DefaultUpdateManager implements UpdateManager
 	private void checkForUpdates(long lastUpdate, Observer<UpdateContentProgress> observer)
 	{
 		observer.onNext(UpdateContentProgress.checking());
-		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
+		apiCall = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonCallback()
 		{
-			@Override public void onSuccess()
+			@Override public void onSuccess(@NonNull Call call, @NonNull Response response, @NonNull ConnectionInfo connectionInfo) throws IOException
 			{
-				apiClient = null;
+				super.onSuccess(call, response, connectionInfo);
+
+				apiCall = null;
 
 				boolean toDownload = false;
 
-				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
+				if (connectionInfo.responseCode < 300 && connectionInfo.responseCode >= 200)
 				{
 					try
 					{
-						if (getConnectionInfo().responseCode == 200)
+						if (connectionInfo.responseCode == 200)
 						{
-							JsonElement response = getContent();
+							JsonElement jsonResponse = getContent();
 
-							if (response != null && response.isJsonObject())
+							if (jsonResponse != null && jsonResponse.isJsonObject())
 							{
-								if (response.getAsJsonObject().has("file"))
+								if (jsonResponse.getAsJsonObject().has("file"))
 								{
-									String endpoint = response.getAsJsonObject().get("file").getAsString();
+									String endpoint = jsonResponse.getAsJsonObject().get("file").getAsString();
 									downloadUpdates(endpoint, observer);
 									toDownload = true;
 								}
@@ -169,14 +172,14 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
+						// e.printStackTrace();
 					}
 				}
-				else if (getConnectionInfo().responseCode == 303)
+				else if (connectionInfo.responseCode == 303)
 				{
-					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
+					if (!TextUtils.isEmpty(connectionInfo.responseHeaders.get("Location")))
 					{
-						String location = getConnectionInfo().responseHeaders.get("Location");
+						String location = connectionInfo.responseHeaders.get("Location");
 						downloadUpdates(location, observer);
 						toDownload = true;
 					}
@@ -193,12 +196,12 @@ public class DefaultUpdateManager implements UpdateManager
 				}
 			}
 
-			@Override public void onFailure()
+			@Override public void onFailure(@NonNull Call call, @Nullable IOException e, @NonNull ConnectionInfo connectionInfo)
 			{
-				observer.onError(new IllegalStateException("Unexpected response when checking for delta update: " + getConnectionInfo().toString()));
+				observer.onError(new IllegalStateException("Unexpected response when checking for delta update: " + connectionInfo));
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
-					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(connectionInfo);
 				}
 			}
 		});
