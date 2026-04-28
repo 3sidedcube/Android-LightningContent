@@ -88,7 +88,7 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						// e.printStackTrace();
+						// Empty
 					}
 				}
 				else if (connectionInfo.responseCode == 303)
@@ -173,7 +173,7 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						// e.printStackTrace();
+						// Empty
 					}
 				}
 				else if (connectionInfo.responseCode == 303)
@@ -286,8 +286,6 @@ public class DefaultUpdateManager implements UpdateManager
 							}
 							observer.onComplete();
 						} catch (Exception e) {
-							e.printStackTrace();
-
 							observer.onError(e);
 							if (ContentSettings.getInstance().getUpdateListener() != null) {
 								ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, connectionInfo);

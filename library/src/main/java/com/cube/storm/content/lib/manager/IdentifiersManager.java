@@ -100,14 +100,14 @@ public class IdentifiersManager
 					}
 					catch (Exception e)
 					{
-					 	e.printStackTrace();
+						// Empty
 					}
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			// Empty
 		}
 	}
 

@@ -94,7 +94,7 @@ public abstract class GZIPTarCacheConnectionInfoCallback extends FileCacheCallba
 		}
 		catch (IOException e)
 		{
-			// e.printStackTrace();
+			// Empty
 			onFailure(call, e);
 		}
 	}

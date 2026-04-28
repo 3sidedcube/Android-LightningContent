@@ -48,7 +48,7 @@ public class SharedPreferencesPolicyManager implements PolicyManager
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			// Empty
 		}
 
 		// Assume they are.

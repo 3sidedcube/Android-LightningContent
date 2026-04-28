@@ -72,7 +72,7 @@ public abstract class APIManager
 		}
 		catch (Exception e)
 		{
-			// e.printStackTrace();
+			// Empty
 			throw new Error("App ID set in ContentSettings#appId is an incorrect format");
 		}
 
@@ -146,7 +146,7 @@ public abstract class APIManager
 		}
 		catch (Exception e)
 		{
-			// // e.printStackTrace();
+			// Empty
 			throw new Error("App ID set in ContentSettings$appId is an incorrect format");
 		}
 
