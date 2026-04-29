@@ -4,26 +4,27 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
-import com.cube.storm.content.lib.Constants;
-import com.cube.storm.content.lib.handler.GZIPTarCacheResponseHandler;
-import com.cube.storm.content.lib.helper.BundleHelper;
+import com.cube.storm.content.lib.callback.GZIPTarCacheConnectionInfoCallback;
+import com.cube.storm.content.lib.callback.JsonCallback;
 import com.cube.storm.content.lib.helper.FileHelper;
+import com.cube.storm.content.lib.model.ConnectionInfo;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
-import net.callumtaylor.asynchttp.AsyncHttpClient;
-import net.callumtaylor.asynchttp.response.JsonResponseHandler;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -35,7 +36,7 @@ import java.util.Map;
  */
 public class DefaultUpdateManager implements UpdateManager
 {
-	private AsyncHttpClient apiClient;
+	private Call apiClient;
 
 	private Subject<UpdateContentRequest> updates = BehaviorSubject.create();
 
@@ -57,27 +58,28 @@ public class DefaultUpdateManager implements UpdateManager
 		observer.onNext(UpdateContentProgress.checking());
 
 		long buildTimeParam = buildTime == null ? -1 : buildTime;
-		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(buildTimeParam, new JsonResponseHandler()
+		apiClient = ContentSettings.getInstance().getApiManager().checkForBundle(buildTimeParam, new JsonCallback()
 		{
-			@Override public void onSuccess()
+			@Override public void onSuccess(@NonNull Call call, @NonNull Response response, @NonNull ConnectionInfo connectionInfo) throws IOException
 			{
+				super.onSuccess(call, response, connectionInfo);
 				apiClient = null;
 
 				boolean toDownload = false;
 
-				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
+				if (connectionInfo.responseCode < 300 && connectionInfo.responseCode >= 200)
 				{
 					try
 					{
-						if (getConnectionInfo().responseCode == 200)
+						if (connectionInfo.responseCode == 200)
 						{
-							JsonElement response = getContent();
+							JsonElement jsonResponse = getContent();
 
-							if (response != null && response.isJsonObject())
+							if (jsonResponse != null && jsonResponse.isJsonObject())
 							{
-								if (response.getAsJsonObject().has("file"))
+								if (jsonResponse.getAsJsonObject().has("file"))
 								{
-									String endpoint = response.getAsJsonObject().get("file").getAsString();
+									String endpoint = jsonResponse.getAsJsonObject().get("file").getAsString();
 									downloadUpdates(endpoint, observer);
 									toDownload = true;
 								}
@@ -86,14 +88,14 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
+						// Empty
 					}
 				}
-				else if (getConnectionInfo().responseCode == 303)
+				else if (connectionInfo.responseCode == 303)
 				{
-					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
+					if (!TextUtils.isEmpty(connectionInfo.responseHeaders.get("Location")))
 					{
-						String location = getConnectionInfo().responseHeaders.get("Location");
+						String location = connectionInfo.responseHeaders.get("Location");
 						downloadUpdates(location, observer);
 						toDownload = true;
 					}
@@ -110,13 +112,13 @@ public class DefaultUpdateManager implements UpdateManager
 				}
 			}
 
-			@Override public void onFailure()
+			@Override public void onFailure(@NonNull Call call, @Nullable IOException e, @NonNull ConnectionInfo connectionInfo)
 			{
-				observer.onError(new IOException("Unexpected response when checking for bundle: " + getConnectionInfo().toString()));
+				observer.onError(new IOException("Unexpected response when checking for bundle: " + connectionInfo));
 
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
-					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(connectionInfo);
 				}
 			}
 		});
@@ -140,27 +142,29 @@ public class DefaultUpdateManager implements UpdateManager
 	private void checkForUpdates(long lastUpdate, Observer<UpdateContentProgress> observer)
 	{
 		observer.onNext(UpdateContentProgress.checking());
-		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonResponseHandler()
+		apiClient = ContentSettings.getInstance().getApiManager().checkForDelta(lastUpdate, new JsonCallback()
 		{
-			@Override public void onSuccess()
+			@Override public void onSuccess(@NonNull Call call, @NonNull Response response, @NonNull ConnectionInfo connectionInfo) throws IOException
 			{
+				super.onSuccess(call, response, connectionInfo);
+
 				apiClient = null;
 
 				boolean toDownload = false;
 
-				if (getConnectionInfo().responseCode < 300 && getConnectionInfo().responseCode >= 200)
+				if (connectionInfo.responseCode < 300 && connectionInfo.responseCode >= 200)
 				{
 					try
 					{
-						if (getConnectionInfo().responseCode == 200)
+						if (connectionInfo.responseCode == 200)
 						{
-							JsonElement response = getContent();
+							JsonElement jsonResponse = getContent();
 
-							if (response != null && response.isJsonObject())
+							if (jsonResponse != null && jsonResponse.isJsonObject())
 							{
-								if (response.getAsJsonObject().has("file"))
+								if (jsonResponse.getAsJsonObject().has("file"))
 								{
-									String endpoint = response.getAsJsonObject().get("file").getAsString();
+									String endpoint = jsonResponse.getAsJsonObject().get("file").getAsString();
 									downloadUpdates(endpoint, observer);
 									toDownload = true;
 								}
@@ -169,14 +173,14 @@ public class DefaultUpdateManager implements UpdateManager
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
+						// Empty
 					}
 				}
-				else if (getConnectionInfo().responseCode == 303)
+				else if (connectionInfo.responseCode == 303)
 				{
-					if (!TextUtils.isEmpty(getConnectionInfo().responseHeaders.get("Location")))
+					if (!TextUtils.isEmpty(connectionInfo.responseHeaders.get("Location")))
 					{
-						String location = getConnectionInfo().responseHeaders.get("Location");
+						String location = connectionInfo.responseHeaders.get("Location");
 						downloadUpdates(location, observer);
 						toDownload = true;
 					}
@@ -193,12 +197,12 @@ public class DefaultUpdateManager implements UpdateManager
 				}
 			}
 
-			@Override public void onFailure()
+			@Override public void onFailure(@NonNull Call call, @Nullable IOException e, @NonNull ConnectionInfo connectionInfo)
 			{
-				observer.onError(new IllegalStateException("Unexpected response when checking for delta update: " + getConnectionInfo().toString()));
+				observer.onError(new IllegalStateException("Unexpected response when checking for delta update: " + connectionInfo));
 				if (ContentSettings.getInstance().getUpdateListener() != null)
 				{
-					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(getConnectionInfo());
+					ContentSettings.getInstance().getUpdateListener().onUpdateCheckFailed(connectionInfo);
 				}
 			}
 		});
@@ -229,85 +233,93 @@ public class DefaultUpdateManager implements UpdateManager
 			FileHelper.deleteRecursive(deltaDirectory);
 			deltaDirectory.mkdir();
 
-			apiClient = new AsyncHttpClient(endpoint);
-			apiClient.get(new GZIPTarCacheResponseHandler(ContentSettings.getInstance().getStoragePath() + "/delta")
-			{
-				@Override public void onByteChunkReceivedProcessed(long totalProcessed, long totalLength)
+			OkHttpClient redirectingHttpClient = new OkHttpClient()
+					.newBuilder()
+					.followRedirects(true)
+					.followSslRedirects(true)
+					.connectTimeout(0, TimeUnit.MILLISECONDS)
+					.writeTimeout(0, TimeUnit.MILLISECONDS)
+					.readTimeout(0, TimeUnit.MILLISECONDS)
+					.cache(null)
+					.build();
+
+			try {
+				URL url = new URL(endpoint);
+				System.setProperty("http.keepAlive", "false");
+				Request.Builder request = new Request.Builder()
+						.url(url.toString())
+						.get()
+						.header("Connection", "close");
+
+				// Get the response
+				Call call = redirectingHttpClient.newCall(request.build());
+				call.enqueue(new GZIPTarCacheConnectionInfoCallback(ContentSettings.getInstance().getStoragePath() + "/delta")
 				{
-					super.onByteChunkReceivedProcessed(totalProcessed, totalLength);
-
-					observer.onNext(UpdateContentProgress.downloading(totalProcessed, totalLength));
-					if (ContentSettings.getInstance().getDownloadListener() != null)
-					{
-						ContentSettings.getInstance().getDownloadListener().onDownloadProgress(totalProcessed, totalLength);
-					}
-				}
-
-				@Override public void onSuccess()
-				{
-					super.onSuccess();
-					try
-					{
-						observer.onNext(UpdateContentProgress.verifying());
-
-						// delete the bundle
-						new File(getFilePath() + "/bundle.tar").delete();
-
-						File path = new File(ContentSettings.getInstance().getStoragePath());
-
-						// Check the integrity of the unpacked bundle
-						if (ContentSettings.getInstance().getBundleIntegrityManager().integrityCheck(getFilePath()))
-						{
-							observer.onNext(UpdateContentProgress.deploying());
-							// Move files from /delta to ../
-							FileHelper.copyDirectory(new File(getFilePath()), path);
-							FileHelper.deleteRecursive(new File(getFilePath()));
-							// Enforce the integrity of the deployed directory
-							ContentSettings.getInstance().getBundleIntegrityManager().enforceIntegrityAfterDeployment(path);
-						}
-						observer.onComplete();
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-
-						observer.onError(e);
-						if (ContentSettings.getInstance().getUpdateListener() != null)
-						{
-							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
+					@Override
+					public void onByteChunkProcessed(long totalProcessed, long totalLength) {
+						observer.onNext(UpdateContentProgress.downloading(totalProcessed, totalLength));
+						if (ContentSettings.getInstance().getDownloadListener() != null) {
+							ContentSettings.getInstance().getDownloadListener().onDownloadProgress(totalProcessed, totalLength);
 						}
 					}
-				}
 
-				@Override public void onFailure()
-				{
-					observer.onError(new IllegalStateException("Failed to download bundle"));
-					if (ContentSettings.getInstance().getUpdateListener() != null)
+					@Override
+					public void onSuccess(@NonNull Call call, @NonNull Response response, @NonNull ConnectionInfo connectionInfo) throws IOException
 					{
-						ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, getConnectionInfo());
-					}
-				}
+						super.onSuccess(call, response, connectionInfo);
+						try {
+							observer.onNext(UpdateContentProgress.verifying());
 
-				@Override public void onFinish()
-				{
-					apiClient = null;
+							// delete the bundle
+							new File(getFilePath() + "/bundle.tar").delete();
 
-					if (getConnectionInfo().responseCode >= 200 && getConnectionInfo().responseCode < 300)
-					{
-						if (ContentSettings.getInstance().getUpdateListener() != null)
-						{
-							ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
+							File path = new File(ContentSettings.getInstance().getStoragePath());
+
+							// Check the integrity of the unpacked bundle
+							if (ContentSettings.getInstance().getBundleIntegrityManager().integrityCheck(getFilePath())) {
+								observer.onNext(UpdateContentProgress.deploying());
+								// Move files from /delta to ../
+								FileHelper.copyDirectory(new File(getFilePath()), path);
+								FileHelper.deleteRecursive(new File(getFilePath()));
+								// Enforce the integrity of the deployed directory
+								ContentSettings.getInstance().getBundleIntegrityManager().enforceIntegrityAfterDeployment(path);
+							}
+							observer.onComplete();
+						} catch (Exception e) {
+							observer.onError(e);
+							if (ContentSettings.getInstance().getUpdateListener() != null) {
+								ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, connectionInfo);
+							}
 						}
 					}
-					else
+
+					@Override
+					public void onFailure(@NonNull Call call, @Nullable IOException e, @NonNull ConnectionInfo connectionInfo)
 					{
-						if (ContentSettings.getInstance().getUpdateListener() != null)
-						{
-							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(0, getConnectionInfo());
+						observer.onError(new IllegalStateException("Failed to download bundle"));
+						if (ContentSettings.getInstance().getUpdateListener() != null) {
+							ContentSettings.getInstance().getUpdateListener().onUpdateFailed(1, connectionInfo);
 						}
 					}
-				}
-			});
+
+					@Override
+					public void onFinish(@NonNull ConnectionInfo connectionInfo) {
+						apiClient = null;
+
+						if (connectionInfo.responseCode >= 200 && connectionInfo.responseCode < 300) {
+							if (ContentSettings.getInstance().getUpdateListener() != null) {
+								ContentSettings.getInstance().getUpdateListener().onUpdateDownloaded();
+							}
+						} else {
+							if (ContentSettings.getInstance().getUpdateListener() != null) {
+								ContentSettings.getInstance().getUpdateListener().onUpdateFailed(0, connectionInfo);
+							}
+						}
+					}
+				});
+			} catch (Exception e) {
+				// Ignore
+			}
 		}
 	}
 

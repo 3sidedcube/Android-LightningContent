@@ -55,7 +55,7 @@ public class CacheResolver extends Resolver
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					// Empty
 				}
 			}
 		}

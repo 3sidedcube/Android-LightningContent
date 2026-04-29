@@ -1,6 +1,8 @@
-package com.cube.storm.content.lib.handler;
+package com.cube.storm.content.lib.callback;
 
-import net.callumtaylor.asynchttp.response.CacheResponseHandler;
+import androidx.annotation.NonNull;
+
+import com.cube.storm.content.lib.model.ConnectionInfo;
 
 import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarInputStream;
@@ -17,32 +19,34 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Getter;
+import okhttp3.Call;
+import okhttp3.Response;
 
 /**
- * Caches the response directly to disk. Useful when downloading
- * large files. <b>note</b> This will delete any existing files
- * with the same file name
+ * {@link FileCacheCallback} implementation for a GZIPped TAR file download that unzips the files.
  */
-public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
+public abstract class GZIPTarCacheConnectionInfoCallback extends FileCacheCallback
 {
-	@Getter private String filePath;
-	@Getter private Set<String> extractedFiles = new HashSet<>();
+	@Getter private final String filePath;
+	@Getter private final Set<String> extractedFiles = new HashSet<>();
 
-	public GZIPTarCacheResponseHandler(String filePath)
+	public GZIPTarCacheConnectionInfoCallback(String filePath)
 	{
 		super(filePath + "/bundle.tar");
-
 		this.filePath = filePath;
 	}
 
-	@Override public void onSuccess()
+	@Override
+	public void onSuccess(@NonNull Call call, @NonNull Response response, @NonNull ConnectionInfo connectionInfo) throws IOException
 	{
+		super.onSuccess(call, response, connectionInfo);
+
 		try
 		{
 			int buffer = 8192;
 			long totalRead = 0;
 
-			InputStream stream = new BufferedInputStream(new GZIPInputStream(new FileInputStream(getContent()), buffer), buffer);
+			InputStream stream = new BufferedInputStream(new GZIPInputStream(new FileInputStream(getMFile()), buffer), buffer);
 			TarInputStream tis = new TarInputStream(stream);
 			TarEntry file;
 
@@ -68,7 +72,7 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 					new File(extractFile.getParent()).mkdirs();
 				}
 
- 				FileOutputStream fos = new FileOutputStream(extractedFilePath);
+				FileOutputStream fos = new FileOutputStream(extractedFilePath);
 				BufferedOutputStream dest = new BufferedOutputStream(fos, buffer);
 
 				int count = 0;
@@ -85,17 +89,13 @@ public abstract class GZIPTarCacheResponseHandler extends CacheResponseHandler
 				extractedFiles.add(extractedFilePath);
 			}
 
-			getConnectionInfo().responseLength = totalRead;
+			connectionInfo.responseLength = totalRead;
 			tis.close();
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
-			onFailure();
+			// Empty
+			onFailure(call, e);
 		}
-	}
-
-	@Override public void generateContent()
-	{
 	}
 }

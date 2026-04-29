@@ -2,7 +2,7 @@ package com.cube.storm.content.lib.listener;
 
 import androidx.annotation.Nullable;
 
-import net.callumtaylor.asynchttp.obj.ConnectionInfo;
+import com.cube.storm.content.lib.model.ConnectionInfo;
 
 /**
  * Listener interface for when a delta or bundle has been downloaded and extracted.

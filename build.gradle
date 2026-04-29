@@ -25,17 +25,11 @@ allprojects {
 		mavenCentral()
 
 		maven {
-			url 'http://oss.3sidedcube.com:8081/artifactory/internal'
-			allowInsecureProtocol = true
-		}
-
-		maven {
 			credentials {
-				username "$ARTIFACTORY_USERNAME"
-				password "$ARTIFACTORY_PASSWORD"
+				username "$ANDROID_INTERNAL_PUBLISHING_USERNAME"
+				password "$ANDROID_INTERNAL_PUBLISHING_PASSWORD"
 			}
-			url 'http://oss.3sidedcube.com:8081/artifactory/private'
-			allowInsecureProtocol = true
+			url "$ANDROID_INTERNAL_PUBLISHING_URL"
 		}
 	}
 }

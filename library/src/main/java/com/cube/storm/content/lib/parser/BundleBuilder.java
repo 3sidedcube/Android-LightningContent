@@ -90,7 +90,7 @@ public abstract class BundleBuilder
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			e.printStackTrace();
+			// Empty
 		}
 
 		return null;

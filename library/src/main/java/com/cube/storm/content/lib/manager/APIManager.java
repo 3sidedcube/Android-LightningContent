@@ -2,14 +2,20 @@ package com.cube.storm.content.lib.manager;
 
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Constants;
 import com.cube.storm.content.lib.Environment;
 
-import net.callumtaylor.asynchttp.AsyncHttpClient;
-import net.callumtaylor.asynchttp.response.JsonResponseHandler;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server
@@ -36,6 +42,16 @@ import okhttp3.Headers;
  */
 public abstract class APIManager
 {
+	private final OkHttpClient httpClient = new OkHttpClient()
+			.newBuilder()
+			.followRedirects(false)
+			.followSslRedirects(false)
+			.connectTimeout(0, TimeUnit.MILLISECONDS)
+			.writeTimeout(0, TimeUnit.MILLISECONDS)
+			.readTimeout(0, TimeUnit.MILLISECONDS)
+			.cache(null)
+			.build();
+
 	/**
 	 * Checks the API for any delta updates.
 	 * <p/>
@@ -43,9 +59,10 @@ public abstract class APIManager
 	 * updates since {@param lastUpdate}
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
-	 * @param response The response to use for downloading the delta
+	 * @param callback The callback to use for downloading the delta
 	 */
-	public AsyncHttpClient checkForDelta(long lastUpdate, JsonResponseHandler response)
+	@Nullable
+	public Call checkForDelta(long lastUpdate, Callback callback)
 	{
 		String appId = "";
 
@@ -55,7 +72,7 @@ public abstract class APIManager
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			// Empty
 			throw new Error("App ID set in ContentSettings#appId is an incorrect format");
 		}
 
@@ -73,11 +90,26 @@ public abstract class APIManager
 			builder.add("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken());
 		}
 
-		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
-		client.setAllowRedirect(false);
-		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, builder.build(), response);
+		try
+		{
+			URL url = new URL(ContentSettings.getInstance().getContentBaseUrl() + ContentSettings.getInstance().getContentVersion() + "/" + urlPart);
+			System.setProperty("http.keepAlive", "false");
+			Request.Builder request = new Request.Builder()
+				.url(url.toString())
+				.get()
+				.header("Connection", "close");
 
-		return client;
+			// Get the response
+			Call call = httpClient.newCall(request.build());
+			call.enqueue(callback);
+			return call;
+		}
+		catch (Exception e)
+		{
+			// Ignore
+		}
+
+		return null;
 	}
 
 	/**
@@ -86,11 +118,12 @@ public abstract class APIManager
 	 * Uses the URLs defined in {@link com.cube.storm.ContentSettings#contentBaseUrl} and {@link com.cube.storm.ContentSettings#contentVersion} to download a full
 	 * bundle
 	 *
-	 * @param response The response to use for downloading the bundle
+	 * @param callback The callback to use for downloading the bundle
 	 */
-	public AsyncHttpClient checkForBundle(JsonResponseHandler response)
+	@Nullable
+	public Call checkForBundle(Callback callback)
 	{
-		return checkForBundle(-1, response);
+		return checkForBundle(-1, callback);
 	}
 
 	/**
@@ -100,9 +133,10 @@ public abstract class APIManager
 	 * bundle since {@param lastUpdate}
 	 *
 	 * @param lastUpdate The time of the last update. Usually found in the {@code manifest.json} file
-	 * @param response The response to use for downloading the bundle
+	 * @param callback The callback to use for downloading the bundle
 	 */
-	public AsyncHttpClient checkForBundle(long lastUpdate, JsonResponseHandler response)
+	@Nullable
+	public Call checkForBundle(long lastUpdate, Callback callback)
 	{
 		String appId = "";
 
@@ -112,7 +146,7 @@ public abstract class APIManager
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			// Empty
 			throw new Error("App ID set in ContentSettings$appId is an incorrect format");
 		}
 
@@ -136,10 +170,22 @@ public abstract class APIManager
 			builder.add("Authorization", "" + ContentSettings.getInstance().getAuthorizationToken());
 		}
 
-		AsyncHttpClient client = new AsyncHttpClient(ContentSettings.getInstance().getContentBaseUrl());
-		client.setAllowRedirect(false);
-		client.get(ContentSettings.getInstance().getContentVersion() + "/" + urlPart, null, builder.build(), response);
+		try {
+			URL url = new URL(ContentSettings.getInstance().getContentBaseUrl() + ContentSettings.getInstance().getContentVersion() + "/" + urlPart);
+			System.setProperty("http.keepAlive", "false");
+			Request.Builder request = new Request.Builder()
+				.url(url.toString())
+				.get()
+				.header("Connection", "close");
 
-		return client;
+			// Get the response
+			Call call = httpClient.newCall(request.build());
+			call.enqueue(callback);
+			return call;
+		} catch (Exception e) {
+			// Ignore
+		}
+
+		return null;
 	}
 }
