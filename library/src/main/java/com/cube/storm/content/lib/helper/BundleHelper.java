@@ -17,8 +17,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import timber.log.Timber;
-
 /**
  * Utility methods relating to Storm content bundles and their contents
  */
@@ -29,7 +27,6 @@ public class BundleHelper
 	 */
 	public static void clearCache()
 	{
-		Timber.tag("storm_diagnostics").i("Clearing cached content");
 		String path = ContentSettings.getInstance().getStoragePath();
 		FileHelper.deleteRecursive(new File(path, "pages/"));
 		FileHelper.deleteRecursive(new File(path, "data/"));
