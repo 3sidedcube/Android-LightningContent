@@ -12,10 +12,10 @@ import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
 import com.google.gson.JsonElement;
 
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.Subject;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

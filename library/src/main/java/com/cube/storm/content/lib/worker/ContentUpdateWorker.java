@@ -3,12 +3,12 @@ package com.cube.storm.content.lib.worker;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.RxWorker;
+import androidx.work.rxjava3.RxWorker;
 import androidx.work.WorkerParameters;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentRequest;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 import timber.log.Timber;
 
 /**
@@ -149,7 +149,7 @@ public class ContentUpdateWorker extends RxWorker
 
 		return workJob
 			       .getProgress()
-			       .doOnNext(updateContentProgress -> this.setProgress(updateContentProgress.toWorkerData()))
+			       .doOnNext(updateContentProgress -> this.setCompletableProgress(updateContentProgress.toWorkerData()))
 			       .ignoreElements()
 			       .toSingleDefault(Result.success())
 			       .doOnSuccess(result -> log("Success"))

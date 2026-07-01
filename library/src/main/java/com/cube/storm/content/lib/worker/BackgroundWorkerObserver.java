@@ -5,8 +5,8 @@ import com.cube.storm.content.model.UpdateContentProgress;
 import androidx.lifecycle.LiveData;
 import androidx.work.Data;
 import androidx.work.WorkInfo;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.Subject;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import lombok.Getter;
 
 /**

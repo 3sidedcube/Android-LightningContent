@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.worker.ContentUpdateWorker;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;

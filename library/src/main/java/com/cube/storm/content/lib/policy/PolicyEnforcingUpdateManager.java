@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentRequest;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 
 /**
  * {@link UpdateManager} which ensures updates only occur on a wi-fi connection, otherwise delegating to another
