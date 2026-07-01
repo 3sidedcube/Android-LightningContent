@@ -79,6 +79,7 @@ public abstract class APIManager
 		String urlPart = String.format(Constants.API_CONTENT_UPDATE, appId, lastUpdate, ContentSettings.getInstance().getContentEnvironment().getEnvironmentLabel());
 
 		Headers.Builder builder = new Headers.Builder();
+		builder.add("Connection", "close");
 
 		if (ContentSettings.getInstance().getContentEnvironment() == Environment.TEST)
 		{
@@ -97,7 +98,7 @@ public abstract class APIManager
 			Request.Builder request = new Request.Builder()
 				.url(url.toString())
 				.get()
-				.header("Connection", "close");
+				.headers(builder.build());
 
 			// Get the response
 			Call call = httpClient.newCall(request.build());
@@ -159,6 +160,7 @@ public abstract class APIManager
 		}
 
 		Headers.Builder builder = new Headers.Builder();
+		builder.add("Connection", "close");
 
 		if (ContentSettings.getInstance().getContentEnvironment() == Environment.TEST)
 		{
@@ -176,7 +178,7 @@ public abstract class APIManager
 			Request.Builder request = new Request.Builder()
 				.url(url.toString())
 				.get()
-				.header("Connection", "close");
+				.headers(builder.build());
 
 			// Get the response
 			Call call = httpClient.newCall(request.build());
