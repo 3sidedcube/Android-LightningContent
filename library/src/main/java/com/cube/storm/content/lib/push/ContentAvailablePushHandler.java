@@ -3,7 +3,6 @@ package com.cube.storm.content.lib.push;
 import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.Environment;
 import com.cube.storm.content.lib.helper.BundleHelper;
-import timber.log.Timber;
 
 import java.util.Map;
 
@@ -34,8 +33,6 @@ public class ContentAvailablePushHandler
 	 */
 	public static void handleContentAvailablePush(Map<String, String> data)
 	{
-		Timber.tag("storm_diagnostics").i("Handling content available push: " + data.toString());
-
 		if (ContentSettings.getInstance().getContentEnvironment() != Environment.LIVE)
 		{
 			return;
@@ -47,7 +44,6 @@ public class ContentAvailablePushHandler
 
 		if (remoteEndpoint == null || remoteTimestampString == null)
 		{
-			Timber.tag("storm_diagnostics").i("Content available push invalid");
 			return;
 		}
 
@@ -59,27 +55,21 @@ public class ContentAvailablePushHandler
 
 		if (localTimestamp == null)
 		{
-			Timber.tag("storm_diagnostics").i("Local bundle timestamp not found");
 			return;
 		}
-
-		Timber.tag("storm_diagnostics").i("Local bundle timestamp: " + localTimestamp);
 
 		// If the remote bundle is earlier or the same as our local one then stop
 		if (localTimestamp >= remoteTimestamp)
 		{
-			Timber.tag("storm_diagnostics").i("App already up-to-date");
 			return;
 		}
 
 		// If the local bundle is not allowed to upgrade to the remote bundle because of a landmark publish then stop
 		if (localTimestamp < previousLandmarkTimestamp)
 		{
-			Timber.tag("storm_diagnostics").i("App cannot update this far");
 			return;
 		}
 
-		Timber.tag("storm_diagnostics").i("Downloading from " + remoteEndpoint);
 		ContentSettings.getInstance().getUpdateManager().downloadUpdates(remoteEndpoint);
 	}
 }

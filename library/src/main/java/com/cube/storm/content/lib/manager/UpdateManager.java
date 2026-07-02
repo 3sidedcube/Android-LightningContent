@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.cube.storm.content.lib.helper.BundleHelper;
 import com.cube.storm.content.model.UpdateContentRequest;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 
 /**
  * This is the manager class responsible for checking for and downloading updates from the server

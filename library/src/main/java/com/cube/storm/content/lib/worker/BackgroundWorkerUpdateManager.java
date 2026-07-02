@@ -19,10 +19,9 @@ import com.cube.storm.ContentSettings;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentProgress;
 import com.cube.storm.content.model.UpdateContentRequest;
-import io.reactivex.Observable;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.Subject;
-import timber.log.Timber;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 
 import java.util.UUID;
 
@@ -132,7 +131,6 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	public UpdateContentRequest checkForBundle(@Nullable Long buildTimestamp)
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(FULL_BUNDLE, buildTimestamp, null, null);
-		log(String.format("Enqueuing bundle check (%s)", workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
 		UpdateContentRequest updateContentRequest = UpdateContentRequest.fullBundle(buildTimestamp, progressObservable);
@@ -144,7 +142,6 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	public UpdateContentRequest checkForUpdatesToLocalContent()
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, null, null, null);
-		log(String.format("Enqueuing update check (%s)", workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
 		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdateFromLocalContent(progressObservable);
@@ -156,7 +153,6 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	public UpdateContentRequest checkForUpdates(long lastUpdate)
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DELTA, null, lastUpdate, null);
-		log(String.format("Enqueuing update check from %d (%s)", lastUpdate, workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest);
 		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
 		UpdateContentRequest updateContentRequest = UpdateContentRequest.deltaUpdate(lastUpdate, progressObservable);
@@ -178,7 +174,6 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 	public UpdateContentRequest downloadUpdates(@NonNull String endpoint)
 	{
 		OneTimeWorkRequest workRequest = createOneTimeWorkRequest(DIRECT_DOWNLOAD, null, null, endpoint);
-		log(String.format("Enqueuing download from %s (%s)", endpoint, workRequest.getId().toString()));
 		workManager.enqueueUniqueWork(CONTENT_CHECK_WORK_NAME, ExistingWorkPolicy.APPEND, workRequest);
 		Observable<UpdateContentProgress> progressObservable = createWorkObservable(workRequest.getId());
 		UpdateContentRequest updateContentRequest = UpdateContentRequest.directDownload(progressObservable);
@@ -186,15 +181,9 @@ public class BackgroundWorkerUpdateManager implements UpdateManager
 		return updateContentRequest;
 	}
 
-	private void log(String s)
-	{
-		Timber.tag("storm_diagnostics").i(s);
-	}
-
 	@Override
 	public void scheduleBackgroundUpdates()
 	{
-		log("Scheduling background content updates");
 		PeriodicWorkRequest workRequest = createPeriodicWorkRequest();
 		workManager.enqueueUniquePeriodicWork(CONTENT_CHECK_SCHEDULE_NAME,
 		                                      ExistingPeriodicWorkPolicy.REPLACE,

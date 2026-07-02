@@ -79,8 +79,7 @@ dependencies {
 	implementation project(':library')
 
 	implementation 'androidx.appcompat:appcompat:1.7.1'
-	implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
 
-	compileOnly 'org.projectlombok:lombok:1.18.40'
-	annotationProcessor 'org.projectlombok:lombok:1.18.40'
+	compileOnly 'org.projectlombok:lombok:1.18.46'
+	annotationProcessor 'org.projectlombok:lombok:1.18.46'
 }

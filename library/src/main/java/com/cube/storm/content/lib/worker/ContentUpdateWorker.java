@@ -3,13 +3,12 @@ package com.cube.storm.content.lib.worker;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.RxWorker;
+import androidx.work.rxjava3.RxWorker;
 import androidx.work.WorkerParameters;
 import com.cube.storm.content.lib.manager.DefaultUpdateManager;
 import com.cube.storm.content.lib.manager.UpdateManager;
 import com.cube.storm.content.model.UpdateContentRequest;
-import io.reactivex.Single;
-import timber.log.Timber;
+import io.reactivex.rxjava3.core.Single;
 
 /**
  * Background worker responsible for performing a task relating to content updates.
@@ -96,7 +95,6 @@ public class ContentUpdateWorker extends RxWorker
 		}
 		catch (Throwable err)
 		{
-			log(err);
 			return Single.just(Result.failure());
 		}
 	}
@@ -104,8 +102,6 @@ public class ContentUpdateWorker extends RxWorker
 	@NonNull
 	private Single<Result> doCreateWork()
 	{
-		log("started with " + updateManager);
-
 		UpdateContentRequest workJob = null;
 
 		switch (updateType)
@@ -143,36 +139,16 @@ public class ContentUpdateWorker extends RxWorker
 
 		if (workJob == null)
 		{
-			log("No job to perform");
 			return Single.just(Result.failure());
 		}
 
 		return workJob
 			       .getProgress()
-			       .doOnNext(updateContentProgress -> this.setProgress(updateContentProgress.toWorkerData()))
+			       .doOnNext(updateContentProgress -> this.setCompletableProgress(updateContentProgress.toWorkerData()))
 			       .ignoreElements()
 			       .toSingleDefault(Result.success())
-			       .doOnSuccess(result -> log("Success"))
-			       .doOnError(this::log)
 			       .onErrorReturn(err -> Result.failure(new Data.Builder()
 				                                            .putString("error", err.getMessage())
 				                                            .build()));
-	}
-
-	@Override
-	public void onStopped()
-	{
-		super.onStopped();
-		log("stopped");
-	}
-
-	private void log(String s)
-	{
-		Timber.tag("storm_diagnostics").i("Background worker " + this.getId().toString() + " " + s);
-	}
-
-	private void log(Throwable err)
-	{
-		Timber.tag("storm_diagnostics").i(err, "Background worker " + this.getId().toString() + " error");
 	}
 }
