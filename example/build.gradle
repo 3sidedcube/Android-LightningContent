@@ -11,7 +11,7 @@ buildscript {
 		}
 	}
 	dependencies {
-		classpath 'com.3sidedcube.storm:content-gradle-plugin:1.0.6'
+		classpath 'com.3sidedcube.storm:content-gradle-plugin:2.0.0'
 	}
 }
 
@@ -56,10 +56,11 @@ android {
 			authUsername = ""
 			authPassword = ""
 		}
+	}
 
-		buildFeatures {
-			buildConfig = true
-		}
+	// Required for the Storm plugin to inject its STORM_* BuildConfig fields.
+	buildFeatures {
+		buildConfig = true
 	}
 
 	compileOptions {
