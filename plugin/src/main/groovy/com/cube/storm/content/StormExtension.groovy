@@ -9,6 +9,11 @@ class StormExtension {
     String bundleEnvironment = ""
     String authUsername = ""
     String authPassword = ""
+    /**
+     * Static key sent as the x-bypass-key header on the build-time bundle download request, for
+     * CDN edge gating that isn't tied to a running app (so Firebase AppCheck doesn't apply here).
+     */
+    String bypassKey = ""
     Date bundleTimestamp = null
     Boolean obeyLandmark = null
 
@@ -48,7 +53,8 @@ class StormExtension {
                 obeyLandmark: this.obeyLandmark == null ? other.obeyLandmark : this.obeyLandmark,
                 bundleDownloadStrategy: this.bundleDownloadStrategy == null ? other.bundleDownloadStrategy : this.bundleDownloadStrategy,
                 authUsername: this.authUsername.isEmpty() ? other.authUsername : this.authUsername,
-                authPassword: this.authPassword.isEmpty() ? other.authPassword : this.authPassword
+                authPassword: this.authPassword.isEmpty() ? other.authPassword : this.authPassword,
+                bypassKey: this.bypassKey.isEmpty() ? other.bypassKey : this.bypassKey
         )
     }
 
@@ -58,6 +64,6 @@ class StormExtension {
 
     public String toString()
     {
-        return "Storm(apiBase=${apiBase}, apiVersion=${apiVersion}, appId=${appId}, orgId=${orgId}, orgName=${orgName}, bundleEnv=${bundleEnvironment}, bundleTimestamp=${bundleTimestamp}, obeyLandmark=${obeyLandmark}, bundleDownloadStrategy=${bundleDownloadStrategy}, authUsername=${authUsername}, authPassword=${authPassword}, url=${url})"
+        return "Storm(apiBase=${apiBase}, apiVersion=${apiVersion}, appId=${appId}, orgId=${orgId}, orgName=${orgName}, bundleEnv=${bundleEnvironment}, bundleTimestamp=${bundleTimestamp}, obeyLandmark=${obeyLandmark}, bundleDownloadStrategy=${bundleDownloadStrategy}, authUsername=${authUsername}, authPassword=${authPassword}, bypassKey=${bypassKey.isEmpty() ? "" : "***"}, url=${url})"
     }
 }
