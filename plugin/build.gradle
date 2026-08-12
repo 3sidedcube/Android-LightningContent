@@ -29,7 +29,7 @@ POM_NAME='LightningContentGradlePlugin'
 POM_ARTIFACT_ID='content-gradle-plugin'
 POM_PACKAGING='jar'
 // 2.0.1: adds StormExtension.bypassKey, sent as the x-bypass-key header on the build-time bundle download request.
-VERSION_NAME="2.0.1-rc2"
+VERSION_NAME="2.0.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
