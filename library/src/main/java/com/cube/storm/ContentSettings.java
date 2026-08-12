@@ -179,6 +179,11 @@ public class ContentSettings
 	@Getter @Setter private String authorizationToken;
 
 	/**
+	 * Content key to use when downloading updates/bundles from the CDN
+	 */
+	@Getter @Setter @Nullable private String contentKey;
+
+	/**
 	 * The builder class for {@link com.cube.storm.ContentSettings}. Use this to create a new {@link com.cube.storm.ContentSettings} instance
 	 * with the customised properties specific for your project.
 	 * <p/>
@@ -321,6 +326,19 @@ public class ContentSettings
 		public Builder authorizationToken(@NonNull String token)
 		{
 			construct.authorizationToken = token;
+			return this;
+		}
+
+		/**
+		 * Set the content key header to be used when downloading updates/bundles from the CDN
+		 *
+		 * @param contentKey The content key
+		 *
+		 * @return The {@link com.cube.storm.ContentSettings.Builder} instance for chaining
+		 */
+		public Builder contentKey(@Nullable String contentKey)
+		{
+			construct.contentKey = contentKey;
 			return this;
 		}
 

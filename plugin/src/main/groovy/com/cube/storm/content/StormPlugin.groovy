@@ -122,6 +122,7 @@ class StormPlugin implements Plugin<Project> {
 			boolean requiresAuth = mergedStormConfig.requiresAuth()
 			String url = mergedStormConfig.url
 			String authUsername = mergedStormConfig.authUsername
+			String bypassKey = mergedStormConfig.bypassKey
 
 			String sanitisedUrl = url.replaceAll("[\\\\/:*?\"<>|]", "_")
 			def archiveFile = project.layout.buildDirectory.file("storm/${sanitisedUrl}/bundle.tar.gz")
@@ -172,6 +173,9 @@ class StormPlugin implements Plugin<Project> {
 					if (requiresAuth) {
 						println "Setting auth token for user ${authUsername}: ${authToken}"
 						downloadTaskRef.header "Authorization", authToken
+					}
+					if (!bypassKey.isEmpty()) {
+						downloadTaskRef.header "x-bypass-key", bypassKey
 					}
 				}
 				src url

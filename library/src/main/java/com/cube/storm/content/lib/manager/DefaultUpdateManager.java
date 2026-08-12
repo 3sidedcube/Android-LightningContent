@@ -251,6 +251,12 @@ public class DefaultUpdateManager implements UpdateManager
 						.get()
 						.header("Connection", "close");
 
+				String contentKey = ContentSettings.getInstance().getContentKey();
+				if (!TextUtils.isEmpty(contentKey))
+				{
+					request.header("x-content-key", contentKey);
+				}
+
 				// Get the response
 				Call call = redirectingHttpClient.newCall(request.build());
 				call.enqueue(new GZIPTarCacheConnectionInfoCallback(ContentSettings.getInstance().getStoragePath() + "/delta")
